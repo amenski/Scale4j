@@ -63,39 +63,39 @@ public enum WatermarkPosition {
         switch (this) {
             case TOP_LEFT:
                 x = 0;
-                y = watermarkHeight;
+                y = 0;
                 break;
             case TOP_CENTER:
                 x = (imageWidth - watermarkWidth) / 2;
-                y = watermarkHeight;
+                y = 0;
                 break;
             case TOP_RIGHT:
                 x = imageWidth - watermarkWidth;
-                y = watermarkHeight;
+                y = 0;
                 break;
             case MIDDLE_LEFT:
                 x = 0;
-                y = (imageHeight - watermarkHeight) / 2 + watermarkHeight;
+                y = (imageHeight - watermarkHeight) / 2;
                 break;
             case CENTER:
                 x = (imageWidth - watermarkWidth) / 2;
-                y = (imageHeight - watermarkHeight) / 2 + watermarkHeight;
+                y = (imageHeight - watermarkHeight) / 2;
                 break;
             case MIDDLE_RIGHT:
                 x = imageWidth - watermarkWidth;
-                y = (imageHeight - watermarkHeight) / 2 + watermarkHeight;
+                y = (imageHeight - watermarkHeight) / 2;
                 break;
             case BOTTOM_LEFT:
                 x = 0;
-                y = imageHeight;
+                y = imageHeight - watermarkHeight;
                 break;
             case BOTTOM_CENTER:
                 x = (imageWidth - watermarkWidth) / 2;
-                y = imageHeight;
+                y = imageHeight - watermarkHeight;
                 break;
             case BOTTOM_RIGHT:
                 x = imageWidth - watermarkWidth;
-                y = imageHeight;
+                y = imageHeight - watermarkHeight;
                 break;
         }
 
