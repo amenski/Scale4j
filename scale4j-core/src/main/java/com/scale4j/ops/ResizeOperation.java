@@ -18,7 +18,9 @@ package com.scale4j.ops;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 
-import java.awt.Image;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 /**
@@ -33,11 +35,11 @@ public final class ResizeOperation {
     /**
      * Resizes a BufferedImage to the specified dimensions.
      *
-     * @param source the source image
-     * @param targetWidth the target width
+     * @param source       the source image
+     * @param targetWidth  the target width
      * @param targetHeight the target height
-     * @param mode the resize mode
-     * @param quality the resize quality
+     * @param mode         the resize mode
+     * @param quality      the resize quality
      * @return the resized image
      */
     public static BufferedImage resize(BufferedImage source, int targetWidth, int targetHeight,
@@ -120,37 +122,36 @@ public final class ResizeOperation {
     /**
      * Scales the image using the appropriate algorithm based on quality.
      */
-    private static BufferedImage scaleImage(BufferedImage source, int targetWidth, int targetHeight,
-                                            ResizeQuality quality) {
-        // Create a new image with the target dimensions
-        BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, source.getType());
-
-        // Use the best available scaling method
-        int smoothingHint = getSmoothingHint(quality);
-        scaledImage.getGraphics().setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, smoothingHint);
-        scaledImage.getGraphics().setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
-        scaledImage.getGraphics().setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Draw the scaled image
-        java.awt.Image scaledInstance = source.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-        scaledImage.getGraphics().drawImage(scaledInstance, 0, 0, null);
-
-        return scaledImage;
+    private static BufferedImage scaleImage(
+        BufferedImage source,
+        int targetWidth,
+        int targetHeight,
+        ResizeQuality quality) {
+        // Use AffineTransformOp for better performance and quality
+        BufferedImage dest = new BufferedImage(targetWidth, targetHeight, source.getType());
+        AffineTransform at = AffineTransform.getScaleInstance(
+            (double) targetWidth / source.getWidth(),
+            (double) targetHeight / source.getHeight()
+        );
+        RenderingHints hints = new RenderingHints(RenderingHints.KEY_INTERPOLATION,
+            getInterpolationHint(quality));
+        AffineTransformOp op = new AffineTransformOp(at, hints);
+        return op.filter(source, dest);
     }
 
     /**
-     * Returns the appropriate rendering hint based on quality.
+     * Returns the appropriate interpolation hint value for the given quality.
      */
-    private static java.awt.RenderingHints.Key getSmoothingHint(ResizeQuality quality) {
+    private static Object getInterpolationHint(ResizeQuality quality) {
         switch (quality) {
             case LOW:
-                return java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+                return RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
             case MEDIUM:
-                return java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+                return RenderingHints.VALUE_INTERPOLATION_BILINEAR;
             case HIGH:
             case ULTRA:
             default:
-                return java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+                return RenderingHints.VALUE_INTERPOLATION_BICUBIC;
         }
     }
 }

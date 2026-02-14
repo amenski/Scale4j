@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.scale4j</groupId>
         <artifactId>scale4j</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>scale4j-ext-spring-boot</artifactId>
