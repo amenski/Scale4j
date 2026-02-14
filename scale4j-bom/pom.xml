@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.scale4j</groupId>
+        <artifactId>scale4j</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>scale4j-bom</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Scale4j BOM</name>
+    <description>Bill of Materials for Scale4j dependencies</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Core Module -->
+            <dependency>
+                <groupId>com.scale4j</groupId>
+                <artifactId>scale4j-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- WebP Extension -->
+            <dependency>
+                <groupId>com.scale4j</groupId>
+                <artifactId>scale4j-ext-webp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- AVIF Extension -->
+            <dependency>
+                <groupId>com.scale4j</groupId>
+                <artifactId>scale4j-ext-avif</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Spring Boot Starter -->
+            <dependency>
+                <groupId>com.scale4j</groupId>
+                <artifactId>scale4j-ext-spring-boot</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- WebP ImageIO Dependency -->
+            <dependency>
+                <groupId>org.sejda</groupId>
+                <artifactId>libwebp</artifactId>
+                <version>1.1.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
