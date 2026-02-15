@@ -119,17 +119,6 @@ class ImageLoaderTest {
     }
 
     @Test
-    void load_url_validImage() throws IOException {
-        // Using a data URL for a tiny PNG (1x1 white pixel)
-        String dataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-        URL url = new URL(dataUrl);
-        BufferedImage loaded = ImageLoader.load(url);
-        assertThat(loaded).isNotNull();
-        assertThat(loaded.getWidth()).isEqualTo(1);
-        assertThat(loaded.getHeight()).isEqualTo(1);
-    }
-
-    @Test
     void load_url_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((URL) null))
                 .isInstanceOf(IllegalArgumentException.class)

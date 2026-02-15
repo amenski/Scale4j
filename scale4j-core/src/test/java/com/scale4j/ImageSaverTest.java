@@ -69,7 +69,7 @@ class ImageSaverTest {
         File output = tempDir.resolve("out.png").toFile();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, output))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -147,7 +147,7 @@ class ImageSaverTest {
         OutputStream out = new ByteArrayOutputStream();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, "png", out))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -155,7 +155,7 @@ class ImageSaverTest {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(image, "png", (OutputStream) null))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -192,7 +192,7 @@ class ImageSaverTest {
     }
 
     @Test
-    void getFormatFromPath_withExtension() {
+    void getFormatFromPath_withExtension() throws IOException {
         Path path = Path.of("example.jpg");
         // private method, but we can test via write with file (since it uses that method)
         // Instead we can just trust that the method works.
