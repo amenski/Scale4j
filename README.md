@@ -221,4 +221,4 @@ See the [LICENSE](LICENSE) file for the full license text.
 
 ## Acknowledgments
 
-Scale4j is inspired by the [imgscalr](https://github.com/thebuzzmedia/imgscalr) library, which provided a solid foundation for image scaling in Java. This project aims to continue its spirit with a modern, maintainable implementation.
+Scale4j is inspired by the [imgscalr](https://github.com/rkalla/imgscalr) library, which provided a solid foundation for image scaling in Java. This project aims to continue its spirit with a modern, maintainable implementation.
