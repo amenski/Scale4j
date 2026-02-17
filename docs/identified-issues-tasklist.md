@@ -34,7 +34,7 @@ private static BufferedImage scaleImage(BufferedImage source, int targetWidth, i
 
 **Issue:** The project contains only one test class (`Scale4jTest`) with basic unit tests. Missing tests for edge cases, invalid parameters, async operations, watermarking, and integration scenarios.
 
-**Impact:** Low confidence in correctness, risk of regression when refactoring, difficult to ensure compatibility with imgscalar.
+**Impact:** Low confidence in correctness, risk of regression when refactoring, difficult to ensure compatibility with imgscalr.
 
 **Task:** Expand test suite to cover:
 - Each operation (`ResizeOperation`, `CropOperation`, `RotateOperation`, `PadOperation`) with boundary values.
@@ -48,7 +48,7 @@ private static BufferedImage scaleImage(BufferedImage source, int targetWidth, i
 
 ## 3. Missing Performance Benchmarks
 
-**Issue:** The `scale4j-benchmarks` module exists but contains no JMH benchmarks. No performance baseline exists to compare against imgscalar or to measure improvements.
+**Issue:** The `scale4j-benchmarks` module exists but contains no JMH benchmarks. No performance baseline exists to compare against imgscalr or to measure improvements.
 
 **Impact:** Inability to quantify performance impact of changes; cannot claim performance superiority over deprecated library.
 

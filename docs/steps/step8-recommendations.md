@@ -1,7 +1,7 @@
 # Step 8: Provide recommendation and actionable steps
 
 ## Recommendation
-Scale4j is a viable candidate for adoption as a modern successor to imgscalar, but only after addressing the performance and completeness gaps. The library's foundation is strong (modern Java, async, extensibility), making it a promising base for future development.
+Scale4j is a viable candidate for adoption as a modern successor to imgscalr, but only after addressing the performance and completeness gaps. The library's foundation is strong (modern Java, async, extensibility), making it a promising base for future development.
 
 ## Immediate Actions (P0/P1)
 1. **Replace resize algorithm** – implement `AffineTransformOp` with configurable interpolation.
@@ -24,8 +24,8 @@ Scale4j is a viable candidate for adoption as a modern successor to imgscalar, b
 
 ## Adoption Strategy
 - Use Scale4j for new projects requiring modern Java and async processing.
-- For existing imgscalar users, provide a migration guide highlighting API similarities and new features.
-- Monitor performance benchmarks to ensure improvements meet or exceed imgscalar's performance.
+- For existing imgscalr users, provide a migration guide highlighting API similarities and new features.
+- Monitor performance benchmarks to ensure improvements meet or exceed imgscalr's performance.
 
 ## Next Steps
 1. Create GitHub issues for each task.

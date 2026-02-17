@@ -1,4 +1,4 @@
-# Step 6: Compare with imgscalar feature set
+# Step 6: Compare with imgscalr feature set
 
 ## Feature parity
 - Resize modes (FIT, FILL, EXACT) – yes
@@ -14,7 +14,7 @@
 - Image filters (blur, sharpen, brightness, contrast)
 - Animated GIF support
 - Batch processing API
-- Performance optimizations (imgscalar also limited)
+- Performance optimizations (imgscalr also limited)
 
 ## Conclusion
-Scale4j extends imgscalar's core with modern APIs and additional features, but lacks some niche capabilities.
+Scale4j extends imgscalr's core with modern APIs and additional features, but lacks some niche capabilities.
