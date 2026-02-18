@@ -21,7 +21,7 @@ package com.scale4j.exception;
  * including the source of the image and the underlying cause.
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public class ImageLoadException extends Scale4jException {
 

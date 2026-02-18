@@ -22,7 +22,7 @@ package com.scale4j.log;
  * It is used when no logging framework is available on the classpath.</p>
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public final class NoOpScale4jLogger implements Scale4jLogger {
 

@@ -23,7 +23,7 @@ package com.scale4j.exception;
  * applications to catch all Scale4j-specific exceptions with a single catch block.</p>
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public class Scale4jException extends RuntimeException {
 

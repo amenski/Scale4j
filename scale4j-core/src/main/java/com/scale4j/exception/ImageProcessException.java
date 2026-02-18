@@ -21,7 +21,7 @@ package com.scale4j.exception;
  * including the operation that failed and the image dimensions if available.
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public class ImageProcessException extends Scale4jException {
 

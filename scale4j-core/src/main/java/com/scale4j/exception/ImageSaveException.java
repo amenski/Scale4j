@@ -21,7 +21,7 @@ package com.scale4j.exception;
  * including the destination path and the format being used.
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public class ImageSaveException extends Scale4jException {
 

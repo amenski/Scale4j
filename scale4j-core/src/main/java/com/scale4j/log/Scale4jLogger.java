@@ -32,7 +32,7 @@ package com.scale4j.log;
  * </ul>
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public interface Scale4jLogger {
 

@@ -247,7 +247,12 @@ public class ExifMetadata {
             newHeight = width;
         }
 
-        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        int imageType = image.getType();
+        if (imageType == BufferedImage.TYPE_CUSTOM) {
+            imageType = BufferedImage.TYPE_INT_RGB;
+        }
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, imageType);
         Graphics2D g2d = rotated.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

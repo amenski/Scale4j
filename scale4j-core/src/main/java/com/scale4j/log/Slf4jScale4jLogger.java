@@ -29,7 +29,7 @@ import org.slf4j.helpers.NOPLogger;
  * is not present, the NoOpScale4jLogger will be used instead.</p>
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public final class Slf4jScale4jLogger implements Scale4jLogger {
 
