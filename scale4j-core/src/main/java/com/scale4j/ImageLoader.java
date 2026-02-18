@@ -15,7 +15,13 @@
  */
 package com.scale4j;
 
+import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.util.ImageFormatUtils;
+
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +29,17 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for loading images from various sources.
  */
 final class ImageLoader {
+
+    private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
 
     private ImageLoader() {
         // Utility class
@@ -127,5 +138,115 @@ final class ImageLoader {
             formats.add(suffix.toLowerCase());
         }
         return formats;
+    }
+
+    // ==================== Load with Metadata ====================
+
+    /**
+     * Loads an image from a file with its metadata.
+     *
+     * @param file the source file
+     * @return the loaded BufferedImage with metadata
+     * @throws IOException if the file cannot be read
+     */
+    static ImageWithMetadata loadWithMetadata(File file) throws IOException {
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
+        if (!file.exists()) {
+            throw new IOException("File does not exist: " + file.getAbsolutePath());
+        }
+
+        String format = getFormatFromFile(file);
+        ExifMetadata metadata = readMetadata(file);
+        BufferedImage image = ImageIO.read(file);
+        
+        if (image == null) {
+            throw new IOException("Unable to read image file: " + file.getAbsolutePath());
+        }
+        
+        return new ImageWithMetadata(image, metadata, format);
+    }
+
+    /**
+     * Loads an image from a file path with its metadata.
+     *
+     * @param path the file path
+     * @return the loaded BufferedImage with metadata
+     * @throws IOException if the file cannot be read
+     */
+    static ImageWithMetadata loadWithMetadata(Path path) throws IOException {
+        return loadWithMetadata(path.toFile());
+    }
+
+    /**
+     * Loads an image from an InputStream with its metadata.
+     *
+     * @param stream the input stream
+     * @return the loaded BufferedImage with metadata
+     * @throws IOException if the stream cannot be read
+     */
+    static ImageWithMetadata loadWithMetadata(InputStream stream) throws IOException {
+        if (stream == null) {
+            throw new IllegalArgumentException("InputStream cannot be null");
+        }
+        // Note: InputStream may not support mark/reset, so metadata reading is limited
+        BufferedImage image = ImageIO.read(stream);
+        if (image == null) {
+            throw new IOException("Unable to read image from InputStream");
+        }
+        return new ImageWithMetadata(image, null, null);
+    }
+
+    /**
+     * Loads an image from a URL with its metadata.
+     *
+     * @param url the source URL
+     * @return the loaded BufferedImage with metadata
+     * @throws IOException if the URL cannot be read
+     */
+    static ImageWithMetadata loadWithMetadata(URL url) throws IOException {
+        if (url == null) {
+            throw new IllegalArgumentException("URL cannot be null");
+        }
+        BufferedImage image = ImageIO.read(url);
+        if (image == null) {
+            throw new IOException("Unable to read image from URL: " + url);
+        }
+        return new ImageWithMetadata(image, null, null);
+    }
+
+    /**
+     * Reads EXIF metadata from a file.
+     *
+     * @param file the source file
+     * @return the ExifMetadata, or null if no metadata could be read
+     */
+    private static ExifMetadata readMetadata(File file) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                try {
+                    reader.setInput(iis);
+                    IIOMetadata imageMetadata = reader.getImageMetadata(0);
+                    ExifMetadata exif = new ExifMetadata();
+                    exif.setOrientation(exif.readOrientationFromMetadata(imageMetadata));
+                    return exif;
+                } finally {
+                    reader.dispose();
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to read EXIF metadata from file: " + file.getName(), e);
+        }
+        return null;
+    }
+
+    private static String getFormatFromFile(File file) {
+        if (file == null) {
+            return null;
+        }
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 }

@@ -15,19 +15,36 @@
  */
 package com.scale4j;
 
+import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.metadata.ExifOrientation;
+import com.scale4j.metadata.MetadataUtils;
+import com.scale4j.util.ImageFormatUtils;
+
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for saving images to various formats.
  */
 public final class ImageSaver {
+
+    private static final Logger LOGGER = Logger.getLogger(ImageSaver.class.getName());
 
     private ImageSaver() {
         // Utility class
@@ -88,6 +105,119 @@ public final class ImageSaver {
         }
     }
 
+    // ==================== Write with Metadata ====================
+
+    /**
+     * Writes an ImageWithMetadata to a file.
+     *
+     * @param imageWithMetadata the image with metadata to save
+     * @param file the target file
+     * @return true if the image was saved successfully
+     * @throws IOException if the file cannot be written
+     */
+    public static boolean writeWithMetadata(ImageWithMetadata imageWithMetadata, File file) throws IOException {
+        String format = getFormatFromFile(file);
+        return writeWithMetadata(imageWithMetadata, format, file);
+    }
+
+    /**
+     * Writes an ImageWithMetadata to a file path.
+     *
+     * @param imageWithMetadata the image with metadata to save
+     * @param path the target path
+     * @return true if the image was saved successfully
+     * @throws IOException if the file cannot be written
+     */
+    public static boolean writeWithMetadata(ImageWithMetadata imageWithMetadata, Path path) throws IOException {
+        String format = getFormatFromPath(path);
+        return writeWithMetadata(imageWithMetadata, format, path.toFile());
+    }
+
+    /**
+     * Writes an ImageWithMetadata to a file with the specified format.
+     * Note: PNG format may not support EXIF metadata; metadata may be ignored or cause warnings.
+     *
+     * @param imageWithMetadata the image with metadata to save
+     * @param format the image format (e.g., "png", "jpg")
+     * @param file the target file
+     * @return true if the image was saved successfully
+     * @throws IOException if the file cannot be written
+     */
+    public static boolean writeWithMetadata(ImageWithMetadata imageWithMetadata, String format, File file) throws IOException {
+        BufferedImage image = imageWithMetadata.getImage();
+        ExifMetadata metadata = imageWithMetadata.getMetadata();
+        
+        // If no metadata, use regular write
+        if (metadata == null) {
+            return ImageIO.write(image, format, file);
+        }
+
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(file)) {
+            return writeWithMetadata(image, metadata, format, ios);
+        }
+    }
+
+    /**
+     * Writes an ImageWithMetadata to an OutputStream.
+     * Note: PNG format may not support EXIF metadata; metadata may be ignored or cause warnings.
+     *
+     * @param imageWithMetadata the image with metadata to save
+     * @param format the image format
+     * @param output the output stream
+     * @return true if the image was written successfully
+     * @throws IOException if the image cannot be written
+     */
+    public static boolean writeWithMetadata(ImageWithMetadata imageWithMetadata, String format, OutputStream output) throws IOException {
+        BufferedImage image = imageWithMetadata.getImage();
+        ExifMetadata metadata = imageWithMetadata.getMetadata();
+        
+        // If no metadata, use regular write
+        if (metadata == null) {
+            return ImageIO.write(image, format, output);
+        }
+
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(output)) {
+            return writeWithMetadata(image, metadata, format, ios);
+        }
+    }
+
+    /**
+     * Writes an image with EXIF metadata to an ImageOutputStream.
+     */
+    private static boolean writeWithMetadata(BufferedImage image, ExifMetadata metadata, String format, ImageOutputStream ios) throws IOException {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(format);
+        if (!writers.hasNext()) {
+            // Fall back to regular write if no writer found
+            return ImageIO.write(image, format, ios);
+        }
+
+        ImageWriter writer = writers.next();
+        try {
+            writer.setOutput(ios);
+
+            ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(image);
+            IIOMetadata imageMetadata = writer.getDefaultImageMetadata(type, null);
+
+            // Merge EXIF orientation if supported
+            if (imageMetadata != null && imageMetadata.isStandardMetadataFormatSupported()) {
+                mergeExifOrientation(imageMetadata, metadata.getOrientation());
+            }
+
+            IIOImage iioImage = new IIOImage(image, null, imageMetadata);
+            writer.write(iioImage);
+            return true;
+        } finally {
+            writer.dispose();
+        }
+    }
+
+    /**
+     * Merges EXIF orientation into the image metadata.
+     */
+    private static void mergeExifOrientation(IIOMetadata metadata, ExifOrientation orientation) {
+        MetadataUtils.mergeExifOrientation(metadata, orientation);
+    }
+
     /**
      * Checks if the specified format is writable.
      *
@@ -115,16 +245,11 @@ public final class ImageSaver {
         return formats;
     }
 
-    private static String getFormatFromFile(File file) {
-        return getFormatFromPath(file.toPath());
+    static String getFormatFromFile(File file) {
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 
-    private static String getFormatFromPath(Path path) {
-        String pathStr = path.toString();
-        int lastDot = pathStr.lastIndexOf('.');
-        if (lastDot > 0) {
-            return pathStr.substring(lastDot + 1).toLowerCase();
-        }
-        return "png";
+    static String getFormatFromPath(Path path) {
+        return ImageFormatUtils.getFormatFromPath(path);
     }
 }

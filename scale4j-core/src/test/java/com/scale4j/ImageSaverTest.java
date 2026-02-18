@@ -75,9 +75,10 @@ class ImageSaverTest {
     @Test
     void write_file_nullFile_throwsNullPointerException() {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        // ImageIO.write will throw NullPointerException
+        // ImageIO.write throws IllegalArgumentException for null output
         assertThatThrownBy(() -> ImageSaver.write(image, (File) null))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("output");
     }
 
     @Test
