@@ -15,6 +15,8 @@
  */
 package com.scale4j.watermark;
 
+import com.scale4j.exception.ImageProcessException;
+
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -48,10 +50,10 @@ public final class ImageWatermark implements Watermark {
     @Override
     public void apply(BufferedImage target) {
         if (target == null) {
-            throw new IllegalArgumentException("Target image cannot be null");
+            throw new ImageProcessException("Target image cannot be null", "apply");
         }
         if (image == null) {
-            throw new IllegalArgumentException("Watermark image cannot be null");
+            throw new ImageProcessException("Watermark image cannot be null", "apply");
         }
 
         // Calculate scaled dimensions
@@ -109,7 +111,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder image(BufferedImage image) {
             if (image == null) {
-                throw new IllegalArgumentException("Watermark image cannot be null");
+                throw new ImageProcessException("Watermark image cannot be null", "image");
             }
             this.image = image;
             return this;
@@ -117,7 +119,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder position(WatermarkPosition position) {
             if (position == null) {
-                throw new IllegalArgumentException("Position cannot be null");
+                throw new ImageProcessException("Position cannot be null", "position");
             }
             this.position = position;
             return this;
@@ -125,7 +127,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder opacity(float opacity) {
             if (opacity < 0.0f || opacity > 1.0f) {
-                throw new IllegalArgumentException("Opacity must be between 0.0 and 1.0");
+                throw new ImageProcessException("Opacity must be between 0.0 and 1.0", "opacity");
             }
             this.opacity = opacity;
             return this;
@@ -133,7 +135,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder scale(float scale) {
             if (scale <= 0.0f || scale > 1.0f) {
-                throw new IllegalArgumentException("Scale must be between 0.0 and 1.0");
+                throw new ImageProcessException("Scale must be between 0.0 and 1.0", "scale");
             }
             this.scale = scale;
             return this;
@@ -141,7 +143,7 @@ public final class ImageWatermark implements Watermark {
 
         public ImageWatermark build() {
             if (image == null) {
-                throw new IllegalArgumentException("Watermark image must be set");
+                throw new ImageProcessException("Watermark image must be set", "build");
             }
             return new ImageWatermark(this);
         }

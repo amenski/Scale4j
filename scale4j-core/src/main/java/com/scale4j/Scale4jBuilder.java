@@ -380,19 +380,19 @@ public final class Scale4jBuilder {
      * Applies automatic rotation based on EXIF orientation metadata.
      * This will rotate/flip the image according to the orientation tag
      * and reset the orientation to normal (TOP_LEFT).
+     * All other metadata (camera settings, geotags, etc.) is preserved.
      *
      * @return this builder
      */
     public Scale4jBuilder autoRotate() {
         LOGGER.debug("Adding auto-rotate operation based on EXIF orientation");
-        if (metadata != null) {
+        if (metadata != null && metadata.getOrientation() != null) {
+            final ExifMetadata finalMetadata = metadata;
             operations.add(image -> {
-                ExifMetadata rotatedMeta = new ExifMetadata(ExifOrientation.TOP_LEFT);
-                ImageWithMetadata iwm = new ImageWithMetadata(image, metadata, sourceFormat);
+                ImageWithMetadata iwm = new ImageWithMetadata(image, finalMetadata, sourceFormat);
                 return iwm.withAutoRotation().getImage();
             });
-            // Reset metadata to TOP_LEFT after auto-rotation
-            metadata = new ExifMetadata(ExifOrientation.TOP_LEFT);
+            metadata = metadata.withOrientation(ExifOrientation.TOP_LEFT);
         }
         return this;
     }
@@ -495,7 +495,7 @@ public final class Scale4jBuilder {
     public void toOutputStream(OutputStream output, String format) throws ImageSaveException {
         LOGGER.debug("Writing image to output stream with format: {}", format);
         BufferedImage result = build();
-        String imageFormat = format != null ? format.toLowerCase() : getFormatFromPath(Path.of("output." + format));
+        String imageFormat = format != null ? format.toLowerCase() : "png";
         if (!ImageSaver.isWritableFormat(imageFormat)) {
             imageFormat = "png";
         }
@@ -545,12 +545,8 @@ public final class Scale4jBuilder {
         return baos.toByteArray();
     }
 
-    private static String getFormatFromPath(Path path) {
-        String pathStr = path.toString();
-        int lastDot = pathStr.lastIndexOf('.');
-        if (lastDot > 0) {
-            return pathStr.substring(lastDot + 1).toLowerCase();
-        }
-        return "png";
+    private String getFormatFromPath(Path path) {
+        return ImageSaver.getFormatFromPath(path);
     }
+
 }

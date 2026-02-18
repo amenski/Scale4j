@@ -24,7 +24,27 @@
             <version>2.0.9</version>
             <optional>true</optional>
         </dependency>
-        <!-- TwelveMonkeys ImageIO for extended format support (optional) -->
+        <!-- TwelveMonkeys ImageIO for extended format and metadata support -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-core</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-metadata</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-jpeg</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-tiff</artifactId>
+            <version>3.12.0</version>
+        </dependency>
     </dependencies>
 
     <build>

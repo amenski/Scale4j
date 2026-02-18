@@ -26,7 +26,7 @@ public class CropBenchmark {
         int width = Integer.parseInt(parts[0]);
         int height = Integer.parseInt(parts[1]);
 
-        sourceImage = createTestImage(width, height);
+        sourceImage = TestImageFactory.createSolidTestImage(width, height);
 
         double ratio = Double.parseDouble(cropRatio);
         cropWidth = (int) (width * ratio);
@@ -35,14 +35,7 @@ public class CropBenchmark {
         cropY = (height - cropHeight) / 2;
     }
 
-    private BufferedImage createTestImage(int width, int height) {
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.setColor(new Color(100, 150, 200));
-        g2d.fillRect(0, 0, width, height);
-        g2d.dispose();
-        return image;
-    }
+
 
     @Benchmark
     public BufferedImage crop() {

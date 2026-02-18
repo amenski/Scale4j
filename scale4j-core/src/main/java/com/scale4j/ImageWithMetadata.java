@@ -16,6 +16,7 @@
 package com.scale4j;
 
 import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.metadata.ExifOrientation;
 
 import java.awt.image.BufferedImage;
 
@@ -132,6 +133,7 @@ public final class ImageWithMetadata {
      * Creates a new ImageWithMetadata with the image auto-rotated based on orientation.
      * If metadata contains orientation information, the image will be rotated accordingly
      * and the orientation will be reset to TOP_LEFT.
+     * All other metadata (camera settings, geotags, etc.) is preserved.
      *
      * @return a new ImageWithMetadata with auto-rotated image
      */
@@ -140,8 +142,7 @@ public final class ImageWithMetadata {
             return this;
         }
         BufferedImage rotatedImage = metadata.applyAutoRotation(image);
-        // Create new metadata with TOP_LEFT orientation (orientation already applied)
-        ExifMetadata newMetadata = new ExifMetadata();
+        ExifMetadata newMetadata = metadata.withOrientation(ExifOrientation.TOP_LEFT);
         return new ImageWithMetadata(rotatedImage, newMetadata, sourceFormat);
     }
 

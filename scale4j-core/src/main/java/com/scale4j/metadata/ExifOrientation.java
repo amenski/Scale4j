@@ -16,27 +16,33 @@
 package com.scale4j.metadata;
 
 public enum ExifOrientation {
-    TOP_LEFT(1, false, false),
-    TOP_RIGHT(2, true, false),
-    BOTTOM_RIGHT(3, false, true),
-    BOTTOM_LEFT(4, true, true),
-    LEFT_TOP(5, false, false),
-    RIGHT_TOP(6, true, false),
-    RIGHT_BOTTOM(7, false, true),
-    LEFT_BOTTOM(8, true, true);
+    TOP_LEFT(1, 0, false, false),
+    TOP_RIGHT(2, 0, true, false),
+    BOTTOM_RIGHT(3, 180, false, false),
+    BOTTOM_LEFT(4, 0, false, true),
+    LEFT_TOP(5, 270, true, false),
+    RIGHT_TOP(6, 90, false, false),
+    RIGHT_BOTTOM(7, 90, true, false),
+    LEFT_BOTTOM(8, 270, false, false);
 
     private final int tagValue;
+    private final int rotationDegrees;
     private final boolean flipHorizontal;
     private final boolean flipVertical;
 
-    ExifOrientation(int tagValue, boolean flipHorizontal, boolean flipVertical) {
+    ExifOrientation(int tagValue, int rotationDegrees, boolean flipHorizontal, boolean flipVertical) {
         this.tagValue = tagValue;
+        this.rotationDegrees = rotationDegrees;
         this.flipHorizontal = flipHorizontal;
         this.flipVertical = flipVertical;
     }
 
     public int getTagValue() {
         return tagValue;
+    }
+
+    public int getRotationDegrees() {
+        return rotationDegrees;
     }
 
     public boolean isFlipHorizontal() {
@@ -54,5 +60,9 @@ public enum ExifOrientation {
             }
         }
         return TOP_LEFT;
+    }
+
+    public boolean requiresTransformation() {
+        return rotationDegrees != 0 || flipHorizontal || flipVertical;
     }
 }

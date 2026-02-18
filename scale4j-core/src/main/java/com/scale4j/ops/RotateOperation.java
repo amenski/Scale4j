@@ -15,6 +15,8 @@
  */
 package com.scale4j.ops;
 
+import com.scale4j.exception.ImageProcessException;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -50,7 +52,7 @@ public final class RotateOperation {
      */
     public static BufferedImage rotate(BufferedImage source, double degrees, Color backgroundColor) {
         if (source == null) {
-            throw new IllegalArgumentException("Source image cannot be null");
+            throw new ImageProcessException("Source image cannot be null", "rotate");
         }
 
         // Normalize degrees to 0-360 range

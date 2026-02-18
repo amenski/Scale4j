@@ -20,6 +20,8 @@ import com.scale4j.log.Scale4jLogger;
 import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.metadata.ExifOrientation;
+import com.scale4j.metadata.MetadataUtils;
+import com.scale4j.util.ImageFormatUtils;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -37,6 +39,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for saving images to various formats.
@@ -160,6 +164,7 @@ public final class ImageSaver {
 
     /**
      * Writes an ImageWithMetadata to a file with the specified format.
+     * Note: PNG format may not support EXIF metadata; metadata may be ignored or cause warnings.
      *
      * @param imageWithMetadata the image with metadata to save
      * @param format the image format (e.g., "png", "jpg")
@@ -190,6 +195,7 @@ public final class ImageSaver {
 
     /**
      * Writes an ImageWithMetadata to an OutputStream.
+     * Note: PNG format may not support EXIF metadata; metadata may be ignored or cause warnings.
      *
      * @param imageWithMetadata the image with metadata to save
      * @param format the image format
@@ -257,42 +263,7 @@ public final class ImageSaver {
      * Merges EXIF orientation into the image metadata.
      */
     private static void mergeExifOrientation(IIOMetadata metadata, ExifOrientation orientation) {
-        if (orientation == null) {
-            orientation = ExifOrientation.TOP_LEFT;
-        }
-        
-        try {
-            String exifFormat = "http://ns.adobe.com/exif/1.0/";
-            IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(exifFormat);
-            IIOMetadataNode orientationNode = getOrCreateChildNode(root, "Orientation");
-            orientationNode.setAttribute("value", String.valueOf(orientation.getTagValue()));
-            metadata.mergeTree(exifFormat, root);
-            LOGGER.trace("Merged EXIF orientation: {} into metadata", orientation);
-        } catch (Exception e) {
-            LOGGER.warn("Failed to merge EXIF orientation into metadata", e);
-        }
-    }
-
-    /**
-     * Gets or creates a child node with the given name.
-     */
-    private static IIOMetadataNode getOrCreateChildNode(IIOMetadataNode parent, String nodeName) {
-        if (parent == null) {
-            return null;
-        }
-        
-        // Try to find existing node
-        for (int i = 0; i < parent.getLength(); i++) {
-            IIOMetadataNode child = (IIOMetadataNode) parent.item(i);
-            if (child.getNodeName().equals(nodeName)) {
-                return child;
-            }
-        }
-        
-        // Create new node if not found
-        IIOMetadataNode newNode = new IIOMetadataNode(nodeName);
-        parent.appendChild(newNode);
-        return newNode;
+        MetadataUtils.mergeExifOrientation(metadata, orientation);
     }
 
     /**
@@ -322,16 +293,11 @@ public final class ImageSaver {
         return formats;
     }
 
-    private static String getFormatFromFile(File file) {
-        return getFormatFromPath(file.toPath());
+    static String getFormatFromFile(File file) {
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 
-    private static String getFormatFromPath(Path path) {
-        String pathStr = path.toString();
-        int lastDot = pathStr.lastIndexOf('.');
-        if (lastDot > 0) {
-            return pathStr.substring(lastDot + 1).toLowerCase();
-        }
-        return "png";
+    static String getFormatFromPath(Path path) {
+        return ImageFormatUtils.getFormatFromPath(path);
     }
 }

@@ -25,9 +25,11 @@ import com.scale4j.watermark.Watermark;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 /**
@@ -37,6 +39,8 @@ import java.util.function.Function;
 public final class AsyncScale4j {
 
     private final ExecutorService executor;
+    
+    private static final ExecutorService DEFAULT_EXECUTOR = createDefaultExecutor();
 
     private AsyncScale4j(ExecutorService executor) {
         this.executor = executor;
@@ -44,13 +48,12 @@ public final class AsyncScale4j {
 
     /**
      * Creates a new async processor using a default virtual thread executor (Java 21+)
-     * or a cached thread pool.
+     * or a work-stealing thread pool.
      *
      * @return a new AsyncScale4j instance
      */
     static AsyncScale4j create() {
-        ExecutorService executor = createDefaultExecutor();
-        return new AsyncScale4j(executor);
+        return new AsyncScale4j(DEFAULT_EXECUTOR);
     }
 
     /**
@@ -72,9 +75,10 @@ public final class AsyncScale4j {
             var executorClass = Class.forName("java.util.concurrent.Executors");
             var newVirtualThreadPerTaskExecutor = executorClass.getMethod("newVirtualThreadPerTaskExecutor");
             return (ExecutorService) newVirtualThreadPerTaskExecutor.invoke(null);
-        } catch (Exception e) {
-            // Fall back to cached thread pool
-            return java.util.concurrent.Executors.newCachedThreadPool();
+        } catch (ClassNotFoundException | NoSuchMethodException |
+                 IllegalAccessException | InvocationTargetException e) {
+            // Fall back to a work-stealing pool with named threads
+            return Executors.newWorkStealingPool();
         }
     }
 

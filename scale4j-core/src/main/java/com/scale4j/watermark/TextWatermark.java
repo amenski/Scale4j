@@ -15,6 +15,8 @@
  */
 package com.scale4j.watermark;
 
+import com.scale4j.exception.ImageProcessException;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
@@ -69,7 +71,7 @@ public final class TextWatermark implements Watermark {
     @Override
     public void apply(BufferedImage target) {
         if (target == null) {
-            throw new IllegalArgumentException("Target image cannot be null");
+            throw new ImageProcessException("Target image cannot be null", "apply");
         }
 
         Graphics2D g2d = target.createGraphics();
@@ -159,7 +161,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder text(String text) {
             if (text == null || text.isEmpty()) {
-                throw new IllegalArgumentException("Text cannot be null or empty");
+                throw new ImageProcessException("Text cannot be null or empty", "text");
             }
             this.text = text;
             return this;
@@ -167,7 +169,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder font(Font font) {
             if (font == null) {
-                throw new IllegalArgumentException("Font cannot be null");
+                throw new ImageProcessException("Font cannot be null", "font");
             }
             this.font = font;
             return this;
@@ -179,7 +181,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder color(Color color) {
             if (color == null) {
-                throw new IllegalArgumentException("Color cannot be null");
+                throw new ImageProcessException("Color cannot be null", "color");
             }
             this.color = color;
             return this;
@@ -187,7 +189,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder position(WatermarkPosition position) {
             if (position == null) {
-                throw new IllegalArgumentException("Position cannot be null");
+                throw new ImageProcessException("Position cannot be null", "position");
             }
             this.position = position;
             return this;
@@ -195,7 +197,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder opacity(float opacity) {
             if (opacity < 0.0f || opacity > 1.0f) {
-                throw new IllegalArgumentException("Opacity must be between 0.0 and 1.0");
+                throw new ImageProcessException("Opacity must be between 0.0 and 1.0", "opacity");
             }
             this.opacity = opacity;
             return this;
@@ -208,7 +210,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder margin(int margin) {
             if (margin < 0) {
-                throw new IllegalArgumentException("Margin must be non-negative");
+                throw new ImageProcessException("Margin must be non-negative", "margin");
             }
             this.margin = margin;
             return this;

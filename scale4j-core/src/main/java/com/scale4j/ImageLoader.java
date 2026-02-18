@@ -19,6 +19,7 @@ import com.scale4j.exception.ImageLoadException;
 import com.scale4j.log.Scale4jLogger;
 import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.util.ImageFormatUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -33,6 +34,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for loading images from various sources.
@@ -306,20 +309,9 @@ final class ImageLoader {
     }
 
     private static String getFormatFromFile(File file) {
-        String name = file.getName().toLowerCase();
-        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) {
-            return "jpg";
-        } else if (name.endsWith(".png")) {
-            return "png";
-        } else if (name.endsWith(".gif")) {
-            return "gif";
-        } else if (name.endsWith(".bmp")) {
-            return "bmp";
-        } else if (name.endsWith(".webp")) {
-            return "webp";
-        } else if (name.endsWith(".tiff") || name.endsWith(".tif")) {
-            return "tiff";
+        if (file == null) {
+            return null;
         }
-        return null;
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 }

@@ -15,17 +15,23 @@
  */
 package com.scale4j.metadata;
 
+import com.scale4j.util.ImageFormatUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +39,8 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 public class ExifMetadata {
+
+    private static final Logger LOGGER = Logger.getLogger(ExifMetadata.class.getName());
 
     private ExifOrientation orientation;
     private IIOMetadata metadata;
@@ -75,7 +83,7 @@ public class ExifMetadata {
             for (String formatName : metadataFormatNames) {
                 if ("http://ns.adobe.com/exif/1.0/".equals(formatName)) {
                     IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(formatName);
-                    IIOMetadataNode orientationNode = getChildNode(root, "Orientation");
+                    IIOMetadataNode orientationNode = MetadataUtils.getChildNode(root, "Orientation");
                     if (orientationNode != null) {
                         int orientationValue = Integer.parseInt(orientationNode.getAttribute("value"));
                         return ExifOrientation.fromTagValue(orientationValue);
@@ -83,22 +91,12 @@ public class ExifMetadata {
                 }
             }
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to read EXIF orientation from metadata", e);
         }
         return ExifOrientation.TOP_LEFT;
     }
 
-    private IIOMetadataNode getChildNode(IIOMetadataNode parent, String nodeName) {
-        if (parent == null) {
-            return null;
-        }
-        for (int i = 0; i < parent.getLength(); i++) {
-            IIOMetadataNode child = (IIOMetadataNode) parent.item(i);
-            if (child.getNodeName().equals(nodeName)) {
-                return child;
-            }
-        }
-        return null;
-    }
+
 
     public static ExifMetadata readFromFile(File file) throws IOException {
         ExifMetadata exif = new ExifMetadata();
@@ -157,6 +155,18 @@ public class ExifMetadata {
     }
 
     /**
+     * Creates a copy of this metadata with a different orientation.
+     * Preserves all other metadata (camera settings, geotags, etc.).
+     *
+     * @param newOrientation the new orientation to set
+     * @return a new ExifMetadata instance with the updated orientation
+     */
+    public ExifMetadata withOrientation(ExifOrientation newOrientation) {
+        ExifMetadata copy = new ExifMetadata(newOrientation, this.metadata);
+        return copy;
+    }
+
+    /**
      * Reads the orientation from IIOMetadata.
      *
      * @param metadata the IIOMetadata to read from
@@ -171,7 +181,7 @@ public class ExifMetadata {
             for (String formatName : metadataFormatNames) {
                 if ("http://ns.adobe.com/exif/1.0/".equals(formatName)) {
                     IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(formatName);
-                    IIOMetadataNode orientationNode = getChildNode(root, "Orientation");
+                    IIOMetadataNode orientationNode = MetadataUtils.getChildNode(root, "Orientation");
                     if (orientationNode != null) {
                         int orientationValue = Integer.parseInt(orientationNode.getAttribute("value"));
                         return ExifOrientation.fromTagValue(orientationValue);
@@ -179,7 +189,7 @@ public class ExifMetadata {
                 }
             }
         } catch (Exception e) {
-            // Silently return default
+            LOGGER.log(Level.WARNING, "Failed to read EXIF orientation from metadata", e);
         }
         return ExifOrientation.TOP_LEFT;
     }
@@ -189,43 +199,68 @@ public class ExifMetadata {
     }
 
     public BufferedImage applyAutoRotation(BufferedImage image) {
-        if (orientation == null || orientation == ExifOrientation.TOP_LEFT) {
+        if (orientation == null || orientation == ExifOrientation.TOP_LEFT || !orientation.requiresTransformation()) {
             return image;
         }
 
+        int rotation = orientation.getRotationDegrees();
         boolean flipH = orientation.isFlipHorizontal();
         boolean flipV = orientation.isFlipVertical();
 
-        if (!flipH && !flipV) {
-            return image;
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        AffineTransform transform = new AffineTransform();
+
+        if (rotation != 0) {
+            double radians = Math.toRadians(rotation);
+            switch (rotation) {
+                case 90:
+                    transform.translate(height, 0);
+                    break;
+                case 180:
+                    transform.translate(width, height);
+                    break;
+                case 270:
+                    transform.translate(0, width);
+                    break;
+            }
+            transform.rotate(radians);
         }
 
         double scaleX = flipH ? -1.0 : 1.0;
         double scaleY = flipV ? -1.0 : 1.0;
-
-        AffineTransform transform = new AffineTransform();
         transform.scale(scaleX, scaleY);
 
-        if (flipH && flipV) {
-            transform.translate(-image.getWidth(), -image.getHeight());
-        } else if (flipH) {
-            transform.translate(-image.getWidth(), 0);
-        } else if (flipV) {
-            transform.translate(0, -image.getHeight());
+        if (flipH) {
+            transform.translate(-width, 0);
+        }
+        if (flipV) {
+            transform.translate(0, -height);
         }
 
-        AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(image, null);
+        int newWidth = width;
+        int newHeight = height;
+        if (rotation == 90 || rotation == 270) {
+            newWidth = height;
+            newHeight = width;
+        }
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        Graphics2D g2d = rotated.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.drawImage(image, transform, null);
+        g2d.dispose();
+
+        return rotated;
     }
 
     public void applyToImage(BufferedImage image, File file) throws IOException {
-        if (metadata == null) {
-            return;
-        }
-
         String format = getFormatFromFile(file);
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(format);
         if (!writers.hasNext()) {
+            ImageIO.write(image, format, file);
             return;
         }
 
@@ -235,44 +270,20 @@ public class ExifMetadata {
             IIOMetadata imageMetadata = writer.getDefaultImageMetadata(
                 new javax.imageio.ImageTypeSpecifier(image), null);
 
-            if (imageMetadata != null && metadata.isStandardMetadataFormatSupported()) {
-                mergeExifOrientation(imageMetadata, ExifOrientation.TOP_LEFT.getTagValue());
+            if (imageMetadata != null) {
+                MetadataUtils.mergeExifOrientation(imageMetadata, orientation != null ? orientation.getTagValue() : 1);
             }
 
-            writer.write(image);
+            javax.imageio.IIOImage iioImage = new javax.imageio.IIOImage(image, null, imageMetadata);
+            writer.write(iioImage);
         } finally {
             writer.dispose();
         }
     }
 
-    private void mergeExifOrientation(IIOMetadata metadata, int orientationValue) {
-        try {
-            String exifFormat = "http://ns.adobe.com/exif/1.0/";
-            IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(exifFormat);
-            IIOMetadataNode orientationNode = getChildNode(root, "Orientation");
-            if (orientationNode != null) {
-                orientationNode.setAttribute("value", String.valueOf(orientationValue));
-                metadata.mergeTree(exifFormat, root);
-            }
-        } catch (Exception e) {
-        }
-    }
+
 
     private String getFormatFromFile(File file) {
-        String name = file.getName().toLowerCase();
-        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) {
-            return "jpeg";
-        } else if (name.endsWith(".png")) {
-            return "png";
-        } else if (name.endsWith(".gif")) {
-            return "gif";
-        } else if (name.endsWith(".bmp")) {
-            return "bmp";
-        } else if (name.endsWith(".webp")) {
-            return "webp";
-        } else if (name.endsWith(".avif")) {
-            return "avif";
-        }
-        return "png";
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 }
