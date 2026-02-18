@@ -70,8 +70,8 @@ class TextWatermarkIntegrationTest {
             assertFalse(isImageBlank(testImage), "Image should not be blank after applying watermark at: " + position);
 
             File outputFile = tempDir.resolve("watermark_" + position.name() + ".png").toFile();
-            assertTrue(ImageIO.write(testImage, "png", outputFile),
-                    "Should write output image for position: " + position);
+            assertTrue(ImageIO.write(testImage, "png", outputFile), "Should write output image for position: " + position);
+            assertTrue(ImageIO.write(testImage, "png", outputFile), "Should write output image for position: " + position);
         }
     }
 

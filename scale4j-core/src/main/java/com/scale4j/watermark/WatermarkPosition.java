@@ -47,18 +47,5 @@ public enum WatermarkPosition {
     /** Bottom-right corner */
     BOTTOM_RIGHT;
 
-    /**
-     * Calculates the position coordinates for a watermark without margin.
-     * Delegates to {@link ImageWatermarkPositionCalculator} with margin = 0.
-     *
-     * @param imageWidth the width of the base image
-     * @param imageHeight the height of the base image
-     * @param watermarkWidth the width of the watermark
-     * @param watermarkHeight the height of the watermark
-     * @return an array containing [x, y] coordinates
-     */
-    public int[] calculate(int imageWidth, int imageHeight, int watermarkWidth, int watermarkHeight) {
-        return ImageWatermarkPositionCalculator.getInstance().calculate(
-            imageWidth, imageHeight, watermarkWidth, watermarkHeight, this, 0);
-    }
+
 }
