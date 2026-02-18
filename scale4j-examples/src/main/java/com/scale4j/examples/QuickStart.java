@@ -19,6 +19,7 @@ import com.scale4j.Scale4j;
 import com.scale4j.types.ResizeMode;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 

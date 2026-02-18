@@ -15,13 +15,19 @@
  */
 package com.scale4j.watermark;
 
+
 import org.junit.jupiter.api.Test;
 
+
 import java.awt.*;
+
 import java.awt.image.BufferedImage;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 
 /**
  * Unit tests for TextWatermark.

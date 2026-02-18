@@ -169,11 +169,13 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 | P1 | Missing Performance Benchmarks | Medium | Medium | ✅ DONE |
 | P2 | No EXIF Metadata Preservation | High | High | ✅ DONE |
 | P2 | Limited Image Format Support | Medium | Medium | ✅ DONE |
-| P3 | Error Handling & Logging | Low | Medium | ✅ DONE |
-| P3 | Memory Inefficiency | Medium | Low | ✅ DONE |
-| P4 | Missing Batch Processing API | Medium | Low | ✅ DONE |
-| P4 | No Image Filters / Effects | High | Medium | ✅ DONE |
-| P5 | Documentation for Extensions | Low | Low | ✅ DONE |
+| P3 | Error Handling & Logging | Low | Medium | 🔴 TODO |
+| P3 | Memory Inefficiency | Medium | Low |
+| P4 | Missing Batch Processing API | Medium | Low |
+| P4 | No Image Filters / Effects | High | Medium |
+| P5 | Documentation for Extensions | Low | Low |
+| P5 | Batch Processing API | Medium | Medium | ✅ DONE |
+| P5 | Extensions Documentation | Low | Low | ✅ DONE |
 
 ---
 

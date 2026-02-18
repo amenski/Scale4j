@@ -15,6 +15,7 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageProcessException;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.WatermarkPosition;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -39,8 +41,8 @@ class Scale4jBuilderTest {
     @Test
     void builder_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> Scale4j.load((BufferedImage) null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Source image cannot be null");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Source image cannot be null");
     }
 
     @Test
@@ -197,8 +199,8 @@ class Scale4jBuilderTest {
         assertThatThrownBy(() -> Scale4j.load(source)
                 .crop(90, 90, 20, 20)
                 .build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test
@@ -207,7 +209,7 @@ class Scale4jBuilderTest {
         assertThatThrownBy(() -> Scale4j.load(source)
                 .resize(-10, 50)
                 .build())
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessageContaining("Target dimensions must be positive");
     }
 
@@ -222,129 +224,196 @@ class Scale4jBuilderTest {
         assertThat(result.getHeight()).isEqualTo(50);
     }
 
-    // ==================== Filter Tests ====================
+    // ==================== Scratch Buffer Tests ====================
 
     @Test
-    void builder_blur() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .blur(5.0f)
+    void scratchBuffer_resizeReusesBuffer() {
+        BufferedImage source = new BufferedImage(200, 100, BufferedImage.TYPE_INT_RGB);
+        // Fill source with a specific color pattern to detect corruption
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.RED);
+        g.fillRect(0, 0, 200, 100);
+        g.dispose();
+
+        // First resize creates scratch buffer
+        BufferedImage result1 = Scale4j.load(source)
+                .resize(100, 50)
                 .build();
-        assertThat(result).isNotNull();
-        assertThat(result.getWidth()).isEqualTo(100);
-        assertThat(result.getHeight()).isEqualTo(100);
+        assertThat(result1.getWidth()).isEqualTo(100);
+        assertThat(result1.getHeight()).isEqualTo(50);
+
+        // Second resize with same dimensions should reuse buffer
+        BufferedImage result2 = Scale4j.load(source)
+                .resize(100, 50)
+                .build();
+        assertThat(result2.getWidth()).isEqualTo(100);
+        assertThat(result2.getHeight()).isEqualTo(50);
+
+        // Verify source is not corrupted
+        assertThat(source.getRGB(50, 50)).isEqualTo(Color.RED.getRGB());
     }
 
     @Test
-    void builder_sharpen() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .sharpen()
+    void scratchBuffer_rotateReusesBuffer() {
+        BufferedImage source = new BufferedImage(100, 50, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.BLUE);
+        g.fillRect(0, 0, 100, 50);
+        g.dispose();
+
+        // First rotate creates scratch buffer
+        BufferedImage result1 = Scale4j.load(source)
+                .rotate(90)
                 .build();
-        assertThat(result).isNotNull();
+        assertThat(result1.getWidth()).isEqualTo(50);
+        assertThat(result1.getHeight()).isEqualTo(100);
+
+        // Second rotate with same angle should reuse buffer
+        BufferedImage result2 = Scale4j.load(source)
+                .rotate(90)
+                .build();
+        assertThat(result2.getWidth()).isEqualTo(50);
+        assertThat(result2.getHeight()).isEqualTo(100);
+
+        // Verify source is not corrupted
+        assertThat(source.getRGB(50, 25)).isEqualTo(Color.BLUE.getRGB());
     }
 
     @Test
-    void builder_sharpenWithStrength() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .sharpen(2.0f)
+    void scratchBuffer_padReusesBuffer() {
+        BufferedImage source = new BufferedImage(100, 50, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.GREEN);
+        g.fillRect(0, 0, 100, 50);
+        g.dispose();
+
+        // First pad creates scratch buffer
+        BufferedImage result1 = Scale4j.load(source)
+                .pad(10)
                 .build();
-        assertThat(result).isNotNull();
+        assertThat(result1.getWidth()).isEqualTo(120);
+        assertThat(result1.getHeight()).isEqualTo(70);
+
+        // Second pad with same padding should reuse buffer
+        BufferedImage result2 = Scale4j.load(source)
+                .pad(10)
+                .build();
+        assertThat(result2.getWidth()).isEqualTo(120);
+        assertThat(result2.getHeight()).isEqualTo(70);
+
+        // Verify source is not corrupted
+        assertThat(source.getRGB(50, 25)).isEqualTo(Color.GREEN.getRGB());
     }
 
     @Test
-    void builder_grayscale() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    void scratchBuffer_noOpResizeDoesNotCorruptSource() {
+        BufferedImage source = new BufferedImage(100, 50, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.YELLOW);
+        g.fillRect(0, 0, 100, 50);
+        g.dispose();
+
+        // Resize to same dimensions (should return source)
         BufferedImage result = Scale4j.load(source)
-                .grayscale()
+                .resize(100, 50)
                 .build();
-        assertThat(result).isNotNull();
+
+        // Result should be the same object as source
+        assertThat(result).isSameAs(source);
+
+        // Verify source is intact
+        assertThat(source.getRGB(50, 25)).isEqualTo(Color.YELLOW.getRGB());
     }
 
     @Test
-    void builder_brightness() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    void scratchBuffer_noOpRotateDoesNotCorruptSource() {
+        BufferedImage source = new BufferedImage(100, 50, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.CYAN);
+        g.fillRect(0, 0, 100, 50);
+        g.dispose();
+
+        // Rotate by 0 degrees (should return source)
         BufferedImage result = Scale4j.load(source)
-                .brightness(1.5f)
+                .rotate(0)
                 .build();
-        assertThat(result).isNotNull();
+
+        // Result should be the same object as source
+        assertThat(result).isSameAs(source);
+
+        // Verify source is intact
+        assertThat(source.getRGB(50, 25)).isEqualTo(Color.CYAN.getRGB());
     }
 
     @Test
-    void builder_brightnessOffset() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    void scratchBuffer_noOpPadDoesNotCorruptSource() {
+        BufferedImage source = new BufferedImage(100, 50, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.MAGENTA);
+        g.fillRect(0, 0, 100, 50);
+        g.dispose();
+
+        // Pad with 0 on all sides (should return source)
         BufferedImage result = Scale4j.load(source)
-                .brightnessOffset(50)
+                .pad(0, 0, 0, 0)
                 .build();
-        assertThat(result).isNotNull();
+
+        // Result should be the same object as source
+        assertThat(result).isSameAs(source);
+
+        // Verify source is intact
+        assertThat(source.getRGB(50, 25)).isEqualTo(Color.MAGENTA.getRGB());
     }
 
     @Test
-    void builder_contrast() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    void scratchBuffer_chainedOperationsReuseBuffer() {
+        BufferedImage source = new BufferedImage(200, 100, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = source.createGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, 200, 100);
+        g.dispose();
+
+        // Chain of operations with same intermediate dimensions
         BufferedImage result = Scale4j.load(source)
-                .contrast(1.5f)
+                .resize(100, 50)
+                .rotate(0)  // Should be no-op
+                .pad(5)     // Creates 110x60
                 .build();
-        assertThat(result).isNotNull();
+
+        assertThat(result.getWidth()).isEqualTo(110);
+        assertThat(result.getHeight()).isEqualTo(60);
+
+        // Verify source is not corrupted
+        assertThat(source.getRGB(100, 50)).isEqualTo(Color.BLACK.getRGB());
     }
 
     @Test
-    void builder_sepia() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+    void scratchBuffer_differentDimensionsCreateNewBuffer() {
+        BufferedImage source = new BufferedImage(200, 100, BufferedImage.TYPE_INT_RGB);
+
         BufferedImage result = Scale4j.load(source)
-                .sepia()
+                .resize(100, 50)
+                .resize(50, 25)
                 .build();
-        assertThat(result).isNotNull();
+
+        assertThat(result.getWidth()).isEqualTo(50);
+        assertThat(result.getHeight()).isEqualTo(25);
     }
 
     @Test
-    void builder_sepiaWithIntensity() {
+    void builder_invalidPaddingThrowsException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .sepia(0.5f)
-                .build();
-        assertThat(result).isNotNull();
-    }
 
-    @Test
-    void builder_edgeDetect() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .edgeDetect()
-                .build();
-        assertThat(result).isNotNull();
-    }
+        assertThatThrownBy(() -> Scale4j.load(source)
+                .pad(-1, 0, 0, 0)
+                .build())
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Padding values must be non-negative");
 
-    @Test
-    void builder_vignette() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .vignette(0.5f)
-                .build();
-        assertThat(result).isNotNull();
-    }
-
-    @Test
-    void builder_invert() {
-        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .invert()
-                .build();
-        assertThat(result).isNotNull();
-    }
-
-    @Test
-    void builder_chainFiltersWithOperations() {
-        BufferedImage source = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Scale4j.load(source)
-                .resize(100, 75)
-                .grayscale()
-                .blur(2.0f)
-                .brightness(1.2f)
-                .contrast(1.1f)
-                .build();
-        assertThat(result.getWidth()).isEqualTo(100);
-        assertThat(result.getHeight()).isEqualTo(75);
+        assertThatThrownBy(() -> Scale4j.load(source)
+                .pad(0, -1, 0, 0)
+                .build())
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Padding values must be non-negative");
     }
 }

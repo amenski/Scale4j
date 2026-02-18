@@ -19,6 +19,16 @@ The library is built for Java 17+ and leverages modern language features (reco
 * **Extensible Plugin System**: Add custom operations or format support through a simple SPI.
 * **Comprehensive Testing**: Full JUnit 5 test suite, property‑based tests, and JMH benchmarks.
 
+## Internal Optimizations
+
+Scale4j uses a **scratch buffer** technique to reduce garbage collection pressure during chained operations. When multiple operations produce images of the same dimensions and type, Scale4j reuses a single transient `BufferedImage` buffer within each builder chain. This eliminates unnecessary allocations for common scenarios like repeated resizes to the same size.
+
+The scratch buffer is:
+
+- **Per‑builder**: Each `Scale4jBuilder` instance maintains its own buffer (not shared across builders or threads).
+- **Automatic**: No configuration required—the optimization is always enabled.
+- **Safe**: Buffers are cleared before reuse when necessary (e.g., padding operations).
+
 ## Installation
 
 ### Prerequisites

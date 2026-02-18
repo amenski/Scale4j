@@ -16,19 +16,24 @@
 package com.scale4j.ops;
 
 import org.junit.jupiter.api.Test;
+import com.scale4j.exception.ImageProcessException;
 
 import java.awt.Color;
+import com.scale4j.exception.ImageProcessException;
 import java.awt.image.BufferedImage;
+import com.scale4j.exception.ImageProcessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.scale4j.exception.ImageProcessException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.scale4j.exception.ImageProcessException;
 
 class RotateOperationTest {
 
     @Test
     void rotate_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> RotateOperation.rotate(null, 45.0))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Source image cannot be null");
     }
 

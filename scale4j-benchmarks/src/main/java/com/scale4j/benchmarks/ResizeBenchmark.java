@@ -31,24 +31,11 @@ public class ResizeBenchmark {
         int width = Integer.parseInt(parts[0]);
         int height = Integer.parseInt(parts[1]);
 
-        sourceImage = createTestImage(width, height);
+        sourceImage = TestImageFactory.createSolidTestImage(width, height);
         quality = ResizeQuality.valueOf(qualityStr);
     }
 
-    private BufferedImage createTestImage(int width, int height) {
-        java.awt.Graphics2D g2d = null;
-        try {
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            g2d = image.createGraphics();
-            g2d.setColor(new java.awt.Color(100, 150, 200));
-            g2d.fillRect(0, 0, width, height);
-            return image;
-        } finally {
-            if (g2d != null) {
-                g2d.dispose();
-            }
-        }
-    }
+
 
     @Benchmark
     public BufferedImage resizeExact() {

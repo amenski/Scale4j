@@ -15,6 +15,8 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
+import com.scale4j.exception.ImageSaveException;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.TextWatermark;
@@ -23,9 +25,11 @@ import com.scale4j.watermark.Watermark;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 /**
@@ -35,6 +39,8 @@ import java.util.function.Function;
 public final class AsyncScale4j {
 
     private final ExecutorService executor;
+    
+    private static final ExecutorService DEFAULT_EXECUTOR = createDefaultExecutor();
 
     private AsyncScale4j(ExecutorService executor) {
         this.executor = executor;
@@ -42,13 +48,12 @@ public final class AsyncScale4j {
 
     /**
      * Creates a new async processor using a default virtual thread executor (Java 21+)
-     * or a cached thread pool.
+     * or a work-stealing thread pool.
      *
      * @return a new AsyncScale4j instance
      */
     static AsyncScale4j create() {
-        ExecutorService executor = createDefaultExecutor();
-        return new AsyncScale4j(executor);
+        return new AsyncScale4j(DEFAULT_EXECUTOR);
     }
 
     /**
@@ -62,17 +67,21 @@ public final class AsyncScale4j {
     }
 
     /**
-     * Creates a default executor using virtual threads if available (Java 21+).
+     * Creates a default executor. Uses virtual threads on Java 21+, 
+     * otherwise falls back to a work-stealing pool.
      */
     private static ExecutorService createDefaultExecutor() {
-        // Try to use virtual threads (Java 21+)
+        // Check if virtual threads are available (Java 21+)
+        // Use reflection to avoid compilation errors on Java 17
         try {
-            var executorClass = Class.forName("java.util.concurrent.Executors");
-            var newVirtualThreadPerTaskExecutor = executorClass.getMethod("newVirtualThreadPerTaskExecutor");
-            return (ExecutorService) newVirtualThreadPerTaskExecutor.invoke(null);
-        } catch (Exception e) {
-            // Fall back to cached thread pool
-            return java.util.concurrent.Executors.newCachedThreadPool();
+            var method = Executors.class.getMethod("newVirtualThreadPerTaskExecutor");
+            return (ExecutorService) method.invoke(null);
+        } catch (NoSuchMethodException e) {
+            // Java 17 or earlier - use work-stealing pool
+            return Executors.newWorkStealingPool();
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            // Fallback for any other reflection issues
+            return Executors.newWorkStealingPool();
         }
     }
 
@@ -86,7 +95,7 @@ public final class AsyncScale4j {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return ImageLoader.load(file);
-            } catch (IOException e) {
+            } catch (ImageLoadException e) {
                 throw new RuntimeException("Failed to load image: " + file.getAbsolutePath(), e);
             }
         }, executor);
@@ -144,7 +153,7 @@ public final class AsyncScale4j {
         return CompletableFuture.runAsync(() -> {
             try {
                 ImageSaver.write(image, format, output.toFile());
-            } catch (IOException e) {
+            } catch (ImageSaveException e) {
                 throw new RuntimeException("Failed to save image: " + output, e);
             }
         }, executor);

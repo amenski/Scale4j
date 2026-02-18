@@ -15,14 +15,16 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
+import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Set;
@@ -42,9 +44,11 @@ import java.util.Set;
  * }</pre>
  *
  * @author Scale4j
- * @version 5.0.0
+ * @version 1.0.0
  */
 public final class Scale4j {
+
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(Scale4j.class);
 
     private Scale4j() {
         // Utility class - prevent instantiation
@@ -59,6 +63,8 @@ public final class Scale4j {
      * @return a new builder instance
      */
     public static Scale4jBuilder load(BufferedImage image) {
+        LOGGER.debug("Creating builder from BufferedImage ({}x{})", 
+                image != null ? image.getWidth() : 0, image != null ? image.getHeight() : 0);
         return new Scale4jBuilder(image);
     }
 
@@ -67,9 +73,10 @@ public final class Scale4j {
      *
      * @param file the source file
      * @return a new builder instance
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    public static Scale4jBuilder load(File file) throws IOException {
+    public static Scale4jBuilder load(File file) throws ImageLoadException {
+        LOGGER.debug("Loading image from file: {}", file);
         return new Scale4jBuilder(ImageLoader.load(file));
     }
 
@@ -78,9 +85,10 @@ public final class Scale4j {
      *
      * @param path the file path
      * @return a new builder instance
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    public static Scale4jBuilder load(Path path) throws IOException {
+    public static Scale4jBuilder load(Path path) throws ImageLoadException {
+        LOGGER.debug("Loading image from path: {}", path);
         return new Scale4jBuilder(ImageLoader.load(path));
     }
 
@@ -89,9 +97,10 @@ public final class Scale4j {
      *
      * @param stream the input stream
      * @return a new builder instance
-     * @throws IOException if the stream cannot be read
+     * @throws ImageLoadException if the stream cannot be read
      */
-    public static Scale4jBuilder load(InputStream stream) throws IOException {
+    public static Scale4jBuilder load(InputStream stream) throws ImageLoadException {
+        LOGGER.debug("Loading image from input stream");
         return new Scale4jBuilder(ImageLoader.load(stream));
     }
 
@@ -100,10 +109,80 @@ public final class Scale4j {
      *
      * @param url the source URL
      * @return a new builder instance
-     * @throws IOException if the URL cannot be read
+     * @throws ImageLoadException if the URL cannot be read
      */
-    public static Scale4jBuilder load(URL url) throws IOException {
+    public static Scale4jBuilder load(URL url) throws ImageLoadException {
+        LOGGER.debug("Loading image from URL: {}", url);
         return new Scale4jBuilder(ImageLoader.load(url));
+    }
+
+    // ==================== Load with Metadata Operations ====================
+
+    /**
+     * Creates a new builder from an ImageWithMetadata.
+     *
+     * @param imageWithMetadata the source image with metadata
+     * @return a new builder instance
+     */
+    public static Scale4jBuilder load(ImageWithMetadata imageWithMetadata) {
+        LOGGER.debug("Creating builder from ImageWithMetadata ({}x{})", 
+                imageWithMetadata != null ? imageWithMetadata.getImage().getWidth() : 0,
+                imageWithMetadata != null ? imageWithMetadata.getImage().getHeight() : 0);
+        return new Scale4jBuilder(
+            imageWithMetadata.getImage(),
+            imageWithMetadata.getMetadata(),
+            imageWithMetadata.getSourceFormat()
+        );
+    }
+
+    /**
+     * Creates a new builder by loading an image from a file, preserving metadata.
+     *
+     * @param file the source file
+     * @return a new builder instance with metadata
+     * @throws ImageLoadException if the file cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(File file) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from file: {}", file);
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(file);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
+    }
+
+    /**
+     * Creates a new builder by loading an image from a file path, preserving metadata.
+     *
+     * @param path the file path
+     * @return a new builder instance with metadata
+     * @throws ImageLoadException if the file cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(Path path) throws ImageLoadException {
+        return loadWithMetadata(path.toFile());
+    }
+
+    /**
+     * Creates a new builder by loading an image from an InputStream, preserving metadata.
+     *
+     * @param stream the input stream
+     * @return a new builder instance with metadata
+     * @throws ImageLoadException if the stream cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(InputStream stream) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from input stream");
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(stream);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
+    }
+
+    /**
+     * Creates a new builder by loading an image from a URL, preserving metadata.
+     *
+     * @param url the source URL
+     * @return a new builder instance with metadata
+     * @throws ImageLoadException if the URL cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(URL url) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from URL: {}", url);
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(url);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
     }
 
     // ==================== Async Entry Points ====================
@@ -115,6 +194,7 @@ public final class Scale4j {
      * @return a new AsyncScale4j instance
      */
     public static AsyncScale4j async() {
+        LOGGER.debug("Creating async processor");
         return AsyncScale4j.create();
     }
 
@@ -125,6 +205,7 @@ public final class Scale4j {
      * @return a new AsyncScale4j instance
      */
     public static AsyncScale4j async(java.util.concurrent.ExecutorService executor) {
+        LOGGER.debug("Creating async processor with custom executor");
         return AsyncScale4j.create(executor);
     }
 

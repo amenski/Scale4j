@@ -15,8 +15,12 @@
  */
 package com.scale4j.ops;
 
+import com.scale4j.exception.ImageProcessException;
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
+import com.scale4j.util.ImageTypeUtils;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -27,6 +31,8 @@ import java.awt.image.BufferedImage;
  * Operation for resizing images.
  */
 public final class ResizeOperation {
+
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(ResizeOperation.class);
 
     private ResizeOperation() {
         // Utility class
@@ -41,14 +47,22 @@ public final class ResizeOperation {
      * @param mode         the resize mode
      * @param quality      the resize quality
      * @return the resized image
+     * @throws ImageProcessException if the resize operation fails
      */
     public static BufferedImage resize(BufferedImage source, int targetWidth, int targetHeight,
-                                       ResizeMode mode, ResizeQuality quality) {
+                                       ResizeMode mode, ResizeQuality quality) throws ImageProcessException {
+        LOGGER.debug("Resizing image: {}x{} -> {}x{} mode: {} quality: {}", 
+                source != null ? source.getWidth() : 0, 
+                source != null ? source.getHeight() : 0,
+                targetWidth, targetHeight, mode, quality);
+        
         if (source == null) {
-            throw new IllegalArgumentException("Source image cannot be null");
+            throw new ImageProcessException("Source image cannot be null", "resize");
         }
         if (targetWidth <= 0 || targetHeight <= 0) {
-            throw new IllegalArgumentException("Target dimensions must be positive");
+            throw new ImageProcessException(
+                    String.format("Target dimensions must be positive: width=%d, height=%d", targetWidth, targetHeight), 
+                    "resize", source.getWidth(), source.getHeight());
         }
 
         int sourceWidth = source.getWidth();
@@ -56,21 +70,94 @@ public final class ResizeOperation {
 
         // If dimensions are the same, return the original
         if (sourceWidth == targetWidth && sourceHeight == targetHeight) {
+            LOGGER.debug("Source and target dimensions are identical, returning original image");
             return source;
         }
 
         // Calculate actual dimensions based on mode
         int[] dimensions = calculateDimensions(sourceWidth, sourceHeight, targetWidth, targetHeight, mode);
 
-        return scaleImage(source, dimensions[0], dimensions[1], quality);
+        LOGGER.debug("Calculated resize dimensions: {}x{}", dimensions[0], dimensions[1]);
+        
+        try {
+            BufferedImage result = scaleImage(source, dimensions[0], dimensions[1], quality);
+            LOGGER.info("Successfully resized image: {}x{} -> {}x{}", 
+                    sourceWidth, sourceHeight, result.getWidth(), result.getHeight());
+            return result;
+        } catch (Exception e) {
+            LOGGER.error("Failed to resize image: {}x{} -> {}x{}", 
+                    sourceWidth, sourceHeight, targetWidth, targetHeight, e);
+            throw new ImageProcessException(
+                    String.format("Failed to resize image from %dx%d to %dx%d", 
+                            sourceWidth, sourceHeight, targetWidth, targetHeight),
+                    "resize", sourceWidth, sourceHeight, e);
+        }
+    }
+
+    /**
+     * Resizes a BufferedImage to the specified dimensions, reusing the provided buffer if possible.
+     * If the buffer dimensions and type match, it will be reused; otherwise a new image is created.
+     *
+     * @param source       the source image
+     * @param targetWidth  the target width
+     * @param targetHeight the target height
+     * @param mode         the resize mode
+     * @param quality      the resize quality
+     * @param buffer       optional buffer to reuse (may be null)
+     * @return the resized image
+     * @throws ImageProcessException if the resize operation fails
+     */
+    public static BufferedImage resizeWithBuffer(BufferedImage source, int targetWidth, int targetHeight,
+                                        ResizeMode mode, ResizeQuality quality, BufferedImage buffer) throws ImageProcessException {
+        LOGGER.debug("Resizing image with buffer: {}x{} -> {}x{} mode: {} quality: {}", 
+                source != null ? source.getWidth() : 0, 
+                source != null ? source.getHeight() : 0,
+                targetWidth, targetHeight, mode, quality);
+        
+        if (source == null) {
+            throw new ImageProcessException("Source image cannot be null", "resize");
+        }
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            throw new ImageProcessException(
+                    String.format("Target dimensions must be positive: width=%d, height=%d", targetWidth, targetHeight), 
+                    "resize", source.getWidth(), source.getHeight());
+        }
+
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        // If dimensions are the same, return the original
+        if (sourceWidth == targetWidth && sourceHeight == targetHeight) {
+            LOGGER.debug("Source and target dimensions are identical, returning original image");
+            return source;
+        }
+
+        // Calculate actual dimensions based on mode
+        int[] dimensions = calculateDimensions(sourceWidth, sourceHeight, targetWidth, targetHeight, mode);
+
+        LOGGER.debug("Calculated resize dimensions: {}x{}", dimensions[0], dimensions[1]);
+        
+        try {
+            BufferedImage result = scaleImage(source, dimensions[0], dimensions[1], quality, buffer);
+            LOGGER.info("Successfully resized image with buffer: {}x{} -> {}x{}", 
+                    sourceWidth, sourceHeight, result.getWidth(), result.getHeight());
+            return result;
+        } catch (Exception e) {
+            LOGGER.error("Failed to resize image with buffer: {}x{} -> {}x{}", 
+                    sourceWidth, sourceHeight, targetWidth, targetHeight, e);
+            throw new ImageProcessException(
+                    String.format("Failed to resize image from %dx%d to %dx%d", 
+                            sourceWidth, sourceHeight, targetWidth, targetHeight),
+                    "resize", sourceWidth, sourceHeight, e);
+        }
     }
 
     /**
      * Calculates the actual dimensions based on the resize mode.
      */
-    private static int[] calculateDimensions(int sourceWidth, int sourceHeight,
-                                             int targetWidth, int targetHeight,
-                                             ResizeMode mode) {
+    public static int[] calculateDimensions(int sourceWidth, int sourceHeight,
+                                              int targetWidth, int targetHeight,
+                                              ResizeMode mode) {
         double sourceAspect = (double) sourceWidth / sourceHeight;
         double targetAspect = (double) targetWidth / targetHeight;
 
@@ -127,8 +214,32 @@ public final class ResizeOperation {
         int targetWidth,
         int targetHeight,
         ResizeQuality quality) {
-        // Use AffineTransformOp for better performance and quality
-        BufferedImage dest = new BufferedImage(targetWidth, targetHeight, source.getType());
+        return scaleImage(source, targetWidth, targetHeight, quality, null);
+    }
+
+    /**
+     * Scales the image using the provided buffer if dimensions and type match.
+     * If buffer is null or doesn't match, a new image is created.
+     */
+    private static BufferedImage scaleImage(
+        BufferedImage source,
+        int targetWidth,
+        int targetHeight,
+        ResizeQuality quality,
+        BufferedImage buffer) {
+        // Use a safe image type (handle TYPE_CUSTOM edge case)
+        int imageType = ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+        
+        BufferedImage dest;
+        if (buffer != null && 
+            buffer.getWidth() == targetWidth && 
+            buffer.getHeight() == targetHeight && 
+            buffer.getType() == imageType) {
+            dest = buffer;
+        } else {
+            dest = new BufferedImage(targetWidth, targetHeight, imageType);
+        }
+        
         AffineTransform at = AffineTransform.getScaleInstance(
             (double) targetWidth / source.getWidth(),
             (double) targetHeight / source.getHeight()

@@ -87,20 +87,31 @@ public final class TextWatermark implements Watermark {
 
         int textWidth = (int) Math.ceil(bounds.getWidth());
         int textHeight = (int) Math.ceil(bounds.getHeight());
+        float ascent = metrics.getAscent();
 
-        // Calculate position
-        int[] coords = position.calculate(target.getWidth(), target.getHeight(), textWidth, textHeight);
-        int x = coords[0] + margin;
-        int y = (int) (coords[1] - metrics.getDescent() + margin);
+        // Use TextWatermarkPositionCalculator for positioning
+        TextWatermarkPositionCalculator calculator = TextWatermarkPositionCalculator.getInstance();
+        
+        // Calculate rectangle position
+        int[] rectCoords = calculator.calculate(
+            target.getWidth(), target.getHeight(), textWidth, textHeight, position, margin);
+        int rectX = rectCoords[0];
+        int rectY = rectCoords[1];
+        
+        // Calculate text drawing position
+        int[] textCoords = calculator.calculateTextPosition(
+            rectX, rectY, textWidth, textHeight, position, margin, ascent);
+        int x = textCoords[0];
+        int y = textCoords[1];
 
         // Apply opacity
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
         // Draw background if specified
         if (backgroundColor != null) {
+            int[] bgRect = calculator.calculateBackgroundRect(x, rectY, textWidth, textHeight, margin);
             g2d.setColor(backgroundColor);
-            g2d.fillRect(x - margin, y - textHeight - margin,
-                    textWidth + 2 * margin, textHeight + 2 * margin);
+            g2d.fillRect(bgRect[0], bgRect[1], bgRect[2], bgRect[3]);
         }
 
         // Draw text
@@ -159,7 +170,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder text(String text) {
             if (text == null || text.isEmpty()) {
-                throw new IllegalArgumentException("Text cannot be null or empty");
+                 throw new IllegalArgumentException("Text cannot be null or empty");
             }
             this.text = text;
             return this;
@@ -167,7 +178,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder font(Font font) {
             if (font == null) {
-                throw new IllegalArgumentException("Font cannot be null");
+                 throw new IllegalArgumentException("Font cannot be null");
             }
             this.font = font;
             return this;
@@ -179,7 +190,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder color(Color color) {
             if (color == null) {
-                throw new IllegalArgumentException("Color cannot be null");
+                 throw new IllegalArgumentException("Color cannot be null");
             }
             this.color = color;
             return this;
@@ -187,7 +198,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder position(WatermarkPosition position) {
             if (position == null) {
-                throw new IllegalArgumentException("Position cannot be null");
+                 throw new IllegalArgumentException("Position cannot be null");
             }
             this.position = position;
             return this;
@@ -195,7 +206,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder opacity(float opacity) {
             if (opacity < 0.0f || opacity > 1.0f) {
-                throw new IllegalArgumentException("Opacity must be between 0.0 and 1.0");
+                 throw new IllegalArgumentException("Opacity must be between 0.0 and 1.0");
             }
             this.opacity = opacity;
             return this;
@@ -208,7 +219,7 @@ public final class TextWatermark implements Watermark {
 
         public Builder margin(int margin) {
             if (margin < 0) {
-                throw new IllegalArgumentException("Margin must be non-negative");
+                 throw new IllegalArgumentException("Margin must be non-negative");
             }
             this.margin = margin;
             return this;

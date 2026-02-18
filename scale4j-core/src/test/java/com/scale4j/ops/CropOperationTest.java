@@ -16,67 +16,71 @@
 package com.scale4j.ops;
 
 import org.junit.jupiter.api.Test;
+import com.scale4j.exception.ImageProcessException;
 
 import java.awt.image.BufferedImage;
+import com.scale4j.exception.ImageProcessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.scale4j.exception.ImageProcessException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.scale4j.exception.ImageProcessException;
 
 class CropOperationTest {
 
     @Test
     void crop_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> CropOperation.crop(null, 0, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Source image cannot be null");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Source image cannot be null");
     }
 
     @Test
     void crop_zeroWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 0, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop dimensions must be positive");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Crop dimensions must be positive");
     }
 
     @Test
     void crop_zeroHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 10, 0))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop dimensions must be positive");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Crop dimensions must be positive");
     }
 
     @Test
     void crop_negativeWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, -10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop dimensions must be positive");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Crop dimensions must be positive");
     }
 
     @Test
     void crop_negativeHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 10, -10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop dimensions must be positive");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Crop dimensions must be positive");
     }
 
     @Test
     void crop_negativeX_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, -5, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test
     void crop_negativeY_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, -5, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test
@@ -84,16 +88,16 @@ class CropOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         // x = 95, width = 10 => x+width = 105 > 100
         assertThatThrownBy(() -> CropOperation.crop(source, 95, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test
     void crop_regionExceedsHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 95, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test

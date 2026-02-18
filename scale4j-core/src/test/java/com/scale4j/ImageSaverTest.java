@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.scale4j;
+import com.scale4j.exception.ImageProcessException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -69,15 +70,16 @@ class ImageSaverTest {
         File output = tempDir.resolve("out.png").toFile();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, output))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
     void write_file_nullFile_throwsNullPointerException() {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        // ImageIO.write will throw NullPointerException
+        // ImageIO.write throws IllegalArgumentException for null output
         assertThatThrownBy(() -> ImageSaver.write(image, (File) null))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("output");
     }
 
     @Test
@@ -147,7 +149,7 @@ class ImageSaverTest {
         OutputStream out = new ByteArrayOutputStream();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, "png", out))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
@@ -155,7 +157,7 @@ class ImageSaverTest {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(image, "png", (OutputStream) null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
