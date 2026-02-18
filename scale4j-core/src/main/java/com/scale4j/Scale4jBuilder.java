@@ -527,6 +527,26 @@ public final class Scale4jBuilder {
     }
 
     /**
+     * Flips the image horizontally (left to right).
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder flip() {
+        operations.add(FilterOperation::flip);
+        return this;
+    }
+
+    /**
+     * Flops the image vertically (top to bottom).
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder flop() {
+        operations.add(FilterOperation::flop);
+        return this;
+    }
+
+    /**
      * Applies a sepia tone effect to the image.
      *
      * @return this builder

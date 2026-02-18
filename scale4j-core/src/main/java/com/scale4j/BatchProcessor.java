@@ -37,13 +37,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 /**
- * Batch processor for applying.ExecutorService;
- image processing operations to multiple images.
+ * Batch processor for applying image processing operations to multiple images.
  * Supports parallel processing via executor service and non-blocking async workflows.
  *
  * <p>Example usage:</p>
@@ -115,31 +113,24 @@ public final class BatchProcessor {
         List<CompletableFuture<BufferedImage>> futures = new ArrayList<>(images.size());
         ExecutorService exec = executor != null ? executor : createDefaultExecutor();
 
-        try {
-            for (BufferedImage image : images) {
-                CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
-                        () -> processImage(image),
-                        exec
-                );
-                futures.add(future);
-            }
-
-            if (preserveOrder) {
-                // Wait for all futures to complete in order
-                List<BufferedImage> results = new ArrayList<>(images.size());
-                for (CompletableFuture<BufferedImage> future : futures) {
-                    results.add(future.join());
-                }
-                return futures; // Return the futures list for compatibility
-            }
-
-            return futures;
-        } finally {
-            // Only shutdown if we created the executor
-            if (executor == null) {
-                exec.shutdown();
-            }
+        for (BufferedImage image : images) {
+            CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
+                    () -> processImage(image),
+                    exec
+            );
+            futures.add(future);
         }
+
+        if (preserveOrder) {
+            // Wait for all futures to complete in order
+            List<BufferedImage> results = new ArrayList<>(images.size());
+            for (CompletableFuture<BufferedImage> future : futures) {
+                results.add(future.join());
+            }
+            return futures; // Return the futures list for compatibility
+        }
+
+        return futures;
     }
 
     /**
@@ -149,12 +140,24 @@ public final class BatchProcessor {
      * @return CompletableFuture that completes with list of processed images
      */
     public CompletableFuture<List<BufferedImage>> executeAndJoin() {
+        ExecutorService exec = executor != null ? executor : createDefaultExecutor();
         return CompletableFuture.supplyAsync(() -> {
-            List<CompletableFuture<BufferedImage>> futures = executeAsync();
+            List<CompletableFuture<BufferedImage>> futures = new ArrayList<>(images.size());
+            for (BufferedImage image : images) {
+                CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
+                        () -> processImage(image),
+                        exec
+                );
+                futures.add(future);
+            }
             return futures.stream()
                     .map(CompletableFuture::join)
                     .collect(java.util.stream.Collectors.toList());
-        }, executor != null ? executor : createDefaultExecutor());
+        }, exec).whenComplete((result, ex) -> {
+            if (executor == null) {
+                exec.shutdown();
+            }
+        });
     }
 
     private List<BufferedImage> executeWithExecutor() {

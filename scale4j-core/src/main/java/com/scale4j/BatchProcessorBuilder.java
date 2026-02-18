@@ -339,6 +339,103 @@ public final class BatchProcessorBuilder {
         return this;
     }
 
+    // ==================== Filter Operations ====================
+
+    /**
+     * Applies a Gaussian blur filter to all images.
+     *
+     * @param radius the blur radius (greater than 0)
+     * @return this builder
+     */
+    public BatchProcessorBuilder blur(float radius) {
+        appendOperation(builder -> builder.blur(radius));
+        return this;
+    }
+
+    /**
+     * Applies a sharpening filter to all images.
+     *
+     * @return this builder
+     */
+    public BatchProcessorBuilder sharpen() {
+        appendOperation(builder -> builder.sharpen());
+        return this;
+    }
+
+    /**
+     * Applies a sharpening filter with custom strength to all images.
+     *
+     * @param strength the sharpening strength (1.0 = normal, higher = stronger)
+     * @return this builder
+     */
+    public BatchProcessorBuilder sharpen(float strength) {
+        appendOperation(builder -> builder.sharpen(strength));
+        return this;
+    }
+
+    /**
+     * Converts all images to grayscale.
+     *
+     * @return this builder
+     */
+    public BatchProcessorBuilder grayscale() {
+        appendOperation(builder -> builder.grayscale());
+        return this;
+    }
+
+    /**
+     * Adjusts the brightness of all images.
+     *
+     * @param factor the brightness factor (1.0 = no change, 2.0 = twice as bright, 0.5 = half as bright)
+     * @return this builder
+     */
+    public BatchProcessorBuilder brightness(float factor) {
+        appendOperation(builder -> builder.brightness(factor));
+        return this;
+    }
+
+    /**
+     * Adjusts the brightness of all images by adding an offset.
+     *
+     * @param offset the brightness offset (-255 to 255)
+     * @return this builder
+     */
+    public BatchProcessorBuilder brightnessOffset(float offset) {
+        appendOperation(builder -> builder.brightnessOffset(offset));
+        return this;
+    }
+
+    /**
+     * Adjusts the contrast of all images.
+     *
+     * @param factor the contrast factor (1.0 = no change, 2.0 = double contrast, 0.5 = half contrast)
+     * @return this builder
+     */
+    public BatchProcessorBuilder contrast(float factor) {
+        appendOperation(builder -> builder.contrast(factor));
+        return this;
+    }
+
+    /**
+     * Flips all images horizontally (left to right).
+     *
+     * @return this builder
+     */
+    public BatchProcessorBuilder flip() {
+        appendOperation(builder -> builder.flip());
+        return this;
+    }
+
+    /**
+     * Flops all images vertically (top to bottom).
+     *
+     * @return this builder
+     */
+    public BatchProcessorBuilder flop() {
+        appendOperation(builder -> builder.flop());
+        return this;
+    }
+
     // ==================== Watermark Operations ====================
 
     /**

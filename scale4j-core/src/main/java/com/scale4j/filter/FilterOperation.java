@@ -464,4 +464,56 @@ public final class FilterOperation {
         LookupOp op = new LookupOp(new ByteLookupTable(0, lookupTable), null);
         return op.filter(source, null);
     }
+
+    // ==================== Flip ====================
+
+    /**
+     * Flips the image horizontally (left to right).
+     *
+     * @param source the source image
+     * @return the flipped image
+     */
+    public static BufferedImage flip(BufferedImage source) {
+        if (source == null) {
+            throw new IllegalArgumentException("Source image cannot be null");
+        }
+
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage result = new BufferedImage(width, height, source.getType());
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                result.setRGB(width - 1 - x, y, source.getRGB(x, y));
+            }
+        }
+
+        return result;
+    }
+
+    // ==================== Flop ====================
+
+    /**
+     * Flips the image vertically (top to bottom).
+     *
+     * @param source the source image
+     * @return the flipped image
+     */
+    public static BufferedImage flop(BufferedImage source) {
+        if (source == null) {
+            throw new IllegalArgumentException("Source image cannot be null");
+        }
+
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage result = new BufferedImage(width, height, source.getType());
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                result.setRGB(x, height - 1 - y, source.getRGB(x, y));
+            }
+        }
+
+        return result;
+    }
 }
