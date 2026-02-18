@@ -62,6 +62,9 @@ public final class Scale4jBuilder {
     private ExifMetadata metadata;
     private String sourceFormat;
 
+    // Scratch buffer for reusing BufferedImage allocations within a single build chain
+    private BufferedImage scratchBuffer;
+
     Scale4jBuilder(BufferedImage sourceImage) {
         this(sourceImage, null, null);
     }
@@ -77,6 +80,121 @@ public final class Scale4jBuilder {
         this.sourceFormat = sourceFormat;
     }
 
+    /**
+     * Gets or creates a scratch buffer with the specified dimensions.
+     * Reuses the existing buffer if dimensions match, otherwise creates new.
+     */
+    private BufferedImage getScratchBuffer(int width, int height, int type) {
+        if (scratchBuffer == null ||
+            scratchBuffer.getWidth() != width ||
+            scratchBuffer.getHeight() != height ||
+            scratchBuffer.getType() != type) {
+            scratchBuffer = new BufferedImage(width, height, type);
+        }
+        return scratchBuffer;
+    }
+
+    /**
+     * Updates the scratch buffer if a new image was created.
+     * This prevents storing the source image in the scratch buffer.
+     */
+    private void updateScratchBufferIfNew(BufferedImage buffer, BufferedImage result, BufferedImage source) {
+        if (result != buffer && result != source) {
+            scratchBuffer = result;
+        }
+    }
+
+    // ==================== Buffer-Aware Operation Helpers ====================
+
+    /**
+     * Resizes an image using the scratch buffer when possible.
+     */
+    private BufferedImage resizeWithScratchBuffer(BufferedImage source, int targetWidth, int targetHeight,
+                                                  ResizeMode mode, ResizeQuality quality) {
+        // Validate target dimensions
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            throw new ImageProcessException(
+                    String.format("Target dimensions must be positive: width=%d, height=%d", targetWidth, targetHeight),
+                    "resize", source.getWidth(), source.getHeight());
+        }
+
+        // Calculate actual dimensions based on mode
+        int[] dimensions = ResizeOperation.calculateDimensions(source.getWidth(), source.getHeight(), targetWidth, targetHeight, mode);
+        int width = dimensions[0];
+        int height = dimensions[1];
+        int imageType = com.scale4j.util.ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+
+        BufferedImage buffer = getScratchBuffer(width, height, imageType);
+        BufferedImage result = ResizeOperation.resizeWithBuffer(source, width, height, mode, quality, buffer);
+
+        updateScratchBufferIfNew(buffer, result, source);
+        return result;
+    }
+
+    /**
+     * Pads an image using the scratch buffer when possible.
+     */
+    private BufferedImage padWithScratchBuffer(BufferedImage source, int top, int right, int bottom, int left, Color color) {
+        if (top < 0 || right < 0 || bottom < 0 || left < 0) {
+            throw new ImageProcessException(
+                    String.format("Padding values must be non-negative: top=%d right=%d bottom=%d left=%d", top, right, bottom, left),
+                    "pad", source.getWidth(), source.getHeight());
+        }
+        int newWidth = Math.addExact(source.getWidth(), Math.addExact(left, right));
+        int newHeight = Math.addExact(source.getHeight(), Math.addExact(top, bottom));
+        if (newWidth <= 0 || newHeight <= 0) {
+            throw new ImageProcessException(
+                    String.format("Resulting dimensions must be positive: width=%d height=%d", newWidth, newHeight),
+                    "pad", source.getWidth(), source.getHeight());
+        }
+        int imageType = com.scale4j.util.ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+
+        BufferedImage buffer = getScratchBuffer(newWidth, newHeight, imageType);
+        BufferedImage result = PadOperation.padWithBuffer(source, top, right, bottom, left, color, buffer);
+
+        updateScratchBufferIfNew(buffer, result, source);
+        return result;
+    }
+
+    /**
+     * Rotates an image using the scratch buffer when possible.
+     */
+    private BufferedImage rotateWithScratchBuffer(BufferedImage source, double degrees, Color backgroundColor) {
+        // Calculate rotated dimensions
+        double normalizedDegrees = degrees % 360;
+        if (normalizedDegrees < 0) {
+            normalizedDegrees += 360;
+        }
+
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+        int newWidth;
+        int newHeight;
+
+        if (Math.abs(normalizedDegrees - 90) < 0.001 || Math.abs(normalizedDegrees - 270) < 0.001) {
+            newWidth = sourceHeight;
+            newHeight = sourceWidth;
+        } else if (Math.abs(normalizedDegrees - 180) < 0.001) {
+            newWidth = sourceWidth;
+            newHeight = sourceHeight;
+        } else {
+            double radians = Math.toRadians(normalizedDegrees);
+            double cos = Math.abs(Math.cos(radians));
+            double sin = Math.abs(Math.sin(radians));
+            newWidth = (int) (sourceWidth * cos + sourceHeight * sin);
+            newHeight = (int) (sourceWidth * sin + sourceHeight * cos);
+        }
+
+        int imageType = com.scale4j.util.ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+        BufferedImage buffer = getScratchBuffer(newWidth, newHeight, imageType);
+        BufferedImage result = RotateOperation.rotateWithBuffer(source, degrees, backgroundColor, buffer);
+
+        updateScratchBufferIfNew(buffer, result, source);
+        return result;
+    }
+
+
+
     // ==================== Resize Operations ====================
 
     /**
@@ -88,7 +206,7 @@ public final class Scale4jBuilder {
      */
     public Scale4jBuilder resize(int targetWidth, int targetHeight) {
         LOGGER.debug("Adding resize operation: {}x{}", targetWidth, targetHeight);
-        operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, resizeMode, resizeQuality));
+        operations.add(image -> resizeWithScratchBuffer(image, targetWidth, targetHeight, resizeMode, resizeQuality));
         return this;
     }
 
@@ -103,7 +221,7 @@ public final class Scale4jBuilder {
     public Scale4jBuilder resize(int targetWidth, int targetHeight, ResizeMode mode) {
         LOGGER.debug("Adding resize operation: {}x{} mode: {}", targetWidth, targetHeight, mode);
         this.resizeMode = mode;
-        operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, mode, resizeQuality));
+        operations.add(image -> resizeWithScratchBuffer(image, targetWidth, targetHeight, mode, resizeQuality));
         return this;
     }
 
@@ -120,7 +238,7 @@ public final class Scale4jBuilder {
         LOGGER.debug("Adding resize operation: {}x{} mode: {} quality: {}", targetWidth, targetHeight, mode, quality);
         this.resizeMode = mode;
         this.resizeQuality = quality;
-        operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, mode, quality));
+        operations.add(image -> resizeWithScratchBuffer(image, targetWidth, targetHeight, mode, quality));
         return this;
     }
 
@@ -135,7 +253,7 @@ public final class Scale4jBuilder {
         operations.add(image -> {
             int width = (int) (image.getWidth() * factor);
             int height = (int) (image.getHeight() * factor);
-            return ResizeOperation.resize(image, width, height, resizeMode, resizeQuality);
+            return resizeWithScratchBuffer(image, width, height, resizeMode, resizeQuality);
         });
         return this;
     }
@@ -201,7 +319,7 @@ public final class Scale4jBuilder {
      */
     public Scale4jBuilder rotate(double degrees) {
         LOGGER.debug("Adding rotate operation: {} degrees", degrees);
-        operations.add(image -> RotateOperation.rotate(image, degrees));
+        operations.add(image -> rotateWithScratchBuffer(image, degrees, Color.WHITE));
         return this;
     }
 
@@ -214,7 +332,7 @@ public final class Scale4jBuilder {
      */
     public Scale4jBuilder rotate(double degrees, Color backgroundColor) {
         LOGGER.debug("Adding rotate operation: {} degrees with background color", degrees);
-        operations.add(image -> RotateOperation.rotate(image, degrees, backgroundColor));
+        operations.add(image -> rotateWithScratchBuffer(image, degrees, backgroundColor));
         return this;
     }
 
@@ -265,9 +383,9 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder pad(int top, int right, int bottom, int left, Color color) {
-        LOGGER.debug("Adding pad operation: top={} right={} bottom={} left={} color={}", 
+        LOGGER.debug("Adding pad operation: top={} right={} bottom={} left={} color={}",
                 top, right, bottom, left, color);
-        operations.add(image -> PadOperation.pad(image, top, right, bottom, left, color));
+        operations.add(image -> padWithScratchBuffer(image, top, right, bottom, left, color));
         return this;
     }
 
