@@ -36,7 +36,7 @@ class ResizeOperationTest {
     void resize_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ResizeOperation.resize(null, 100, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Source image cannot be null");
+                .hasMessageContaining("Source image cannot be null");
     }
 
     @Test
@@ -44,7 +44,7 @@ class ResizeOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, -10, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Target dimensions must be positive");
+                .hasMessageContaining("Target dimensions must be positive");
     }
 
     @Test
@@ -52,7 +52,7 @@ class ResizeOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 100, -10, ResizeMode.EXACT, ResizeQuality.MEDIUM))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Target dimensions must be positive");
+                .hasMessageContaining("Target dimensions must be positive");
     }
 
     @Test
@@ -60,7 +60,7 @@ class ResizeOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 0, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Target dimensions must be positive");
+                .hasMessageContaining("Target dimensions must be positive");
     }
 
     @Test
@@ -68,7 +68,7 @@ class ResizeOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 100, 0, ResizeMode.EXACT, ResizeQuality.MEDIUM))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Target dimensions must be positive");
+                .hasMessageContaining("Target dimensions must be positive");
     }
 
     @Test

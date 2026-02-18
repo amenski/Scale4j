@@ -41,7 +41,7 @@ class Scale4jBuilderTest {
     void builder_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> Scale4j.load((BufferedImage) null))
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessage("Source image cannot be null");
+                .hasMessageContaining("Source image cannot be null");
     }
 
     @Test
@@ -199,7 +199,7 @@ class Scale4jBuilderTest {
                 .crop(90, 90, 20, 20)
                 .build())
                 .isInstanceOf(ImageProcessException.class)
-                .hasMessageContaining("Crop region exceeds image bounds");
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test

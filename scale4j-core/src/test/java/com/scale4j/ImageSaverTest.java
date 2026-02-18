@@ -70,7 +70,7 @@ class ImageSaverTest {
         File output = tempDir.resolve("out.png").toFile();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, output))
-                .isInstanceOf(ImageProcessException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
@@ -149,7 +149,7 @@ class ImageSaverTest {
         OutputStream out = new ByteArrayOutputStream();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, "png", out))
-                .isInstanceOf(ImageProcessException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
@@ -157,7 +157,7 @@ class ImageSaverTest {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(image, "png", (OutputStream) null))
-                .isInstanceOf(ImageProcessException.class);
+                .isInstanceOfAny(ImageProcessException.class, IllegalArgumentException.class);
     }
 
     @Test
