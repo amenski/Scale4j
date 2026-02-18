@@ -17,7 +17,8 @@
     <description>Core image processing library</description>
 
     <dependencies>
-        <!-- No external dependencies - pure Java AWT only -->
+        <!-- TwelveMonkeys ImageIO for extended format support (optional) -->
+        <!-- Using standard javax.imageio for metadata - no external dependency needed -->
     </dependencies>
 
     <build>

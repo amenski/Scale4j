@@ -15,6 +15,7 @@
  */
 package com.scale4j;
 
+import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 
@@ -104,6 +105,69 @@ public final class Scale4j {
      */
     public static Scale4jBuilder load(URL url) throws IOException {
         return new Scale4jBuilder(ImageLoader.load(url));
+    }
+
+    // ==================== Load with Metadata Operations ====================
+
+    /**
+     * Creates a new builder from an ImageWithMetadata.
+     *
+     * @param imageWithMetadata the source image with metadata
+     * @return a new builder instance
+     */
+    public static Scale4jBuilder load(ImageWithMetadata imageWithMetadata) {
+        return new Scale4jBuilder(
+            imageWithMetadata.getImage(),
+            imageWithMetadata.getMetadata(),
+            imageWithMetadata.getSourceFormat()
+        );
+    }
+
+    /**
+     * Creates a new builder by loading an image from a file, preserving metadata.
+     *
+     * @param file the source file
+     * @return a new builder instance with metadata
+     * @throws IOException if the file cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(File file) throws IOException {
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(file);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
+    }
+
+    /**
+     * Creates a new builder by loading an image from a file path, preserving metadata.
+     *
+     * @param path the file path
+     * @return a new builder instance with metadata
+     * @throws IOException if the file cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(Path path) throws IOException {
+        return loadWithMetadata(path.toFile());
+    }
+
+    /**
+     * Creates a new builder by loading an image from an InputStream, preserving metadata.
+     *
+     * @param stream the input stream
+     * @return a new builder instance with metadata
+     * @throws IOException if the stream cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(InputStream stream) throws IOException {
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(stream);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
+    }
+
+    /**
+     * Creates a new builder by loading an image from a URL, preserving metadata.
+     *
+     * @param url the source URL
+     * @return a new builder instance with metadata
+     * @throws IOException if the URL cannot be read
+     */
+    public static Scale4jBuilder loadWithMetadata(URL url) throws IOException {
+        ImageWithMetadata iwm = ImageLoader.loadWithMetadata(url);
+        return new Scale4jBuilder(iwm.getImage(), iwm.getMetadata(), iwm.getSourceFormat());
     }
 
     // ==================== Async Entry Points ====================

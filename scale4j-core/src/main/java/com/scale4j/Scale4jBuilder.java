@@ -15,6 +15,8 @@
  */
 package com.scale4j;
 
+import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.metadata.ExifOrientation;
 import com.scale4j.ops.CropOperation;
 import com.scale4j.ops.PadOperation;
 import com.scale4j.ops.ResizeOperation;
@@ -51,11 +53,21 @@ public final class Scale4jBuilder {
     private ResizeMode resizeMode = ResizeMode.AUTOMATIC;
     private ResizeQuality resizeQuality = ResizeQuality.MEDIUM;
 
+    // Metadata tracking
+    private ExifMetadata metadata;
+    private String sourceFormat;
+
     Scale4jBuilder(BufferedImage sourceImage) {
+        this(sourceImage, null, null);
+    }
+
+    Scale4jBuilder(BufferedImage sourceImage, ExifMetadata metadata, String sourceFormat) {
         if (sourceImage == null) {
             throw new IllegalArgumentException("Source image cannot be null");
         }
         this.sourceImage = sourceImage;
+        this.metadata = metadata;
+        this.sourceFormat = sourceFormat;
     }
 
     // ==================== Resize Operations ====================
@@ -315,6 +327,54 @@ public final class Scale4jBuilder {
     }
 
     /**
+     * Builds and returns the processed image with its metadata.
+     *
+     * @return the processed ImageWithMetadata
+     */
+    public ImageWithMetadata buildWithMetadata() {
+        BufferedImage result = build();
+        return new ImageWithMetadata(result, metadata, sourceFormat);
+    }
+
+    /**
+     * Returns the metadata associated with the source image.
+     *
+     * @return the ExifMetadata, or null if no metadata was loaded
+     */
+    public ExifMetadata getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * Returns the source format.
+     *
+     * @return the source format string, or null
+     */
+    public String getSourceFormat() {
+        return sourceFormat;
+    }
+
+    /**
+     * Applies automatic rotation based on EXIF orientation metadata.
+     * This will rotate/flip the image according to the orientation tag
+     * and reset the orientation to normal (TOP_LEFT).
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder autoRotate() {
+        if (metadata != null) {
+            operations.add(image -> {
+                ExifMetadata rotatedMeta = new ExifMetadata(ExifOrientation.TOP_LEFT);
+                ImageWithMetadata iwm = new ImageWithMetadata(image, metadata, sourceFormat);
+                return iwm.withAutoRotation().getImage();
+            });
+            // Reset metadata to TOP_LEFT after auto-rotation
+            metadata = new ExifMetadata(ExifOrientation.TOP_LEFT);
+        }
+        return this;
+    }
+
+    /**
      * Saves the processed image to a file.
      *
      * @param output the output file
@@ -351,6 +411,43 @@ public final class Scale4jBuilder {
     }
 
     /**
+     * Saves the processed image with metadata to a file.
+     * This method writes the EXIF metadata to the output file.
+     *
+     * @param output the output file
+     * @throws IOException if the file cannot be written
+     */
+    public void toFileWithMetadata(File output) throws IOException {
+        ImageWithMetadata result = buildWithMetadata();
+        ImageSaver.writeWithMetadata(result, output);
+    }
+
+    /**
+     * Saves the processed image with metadata to a file path.
+     * This method writes the EXIF metadata to the output file.
+     *
+     * @param path the output path
+     * @throws IOException if the file cannot be written
+     */
+    public void toFileWithMetadata(Path path) throws IOException {
+        ImageWithMetadata result = buildWithMetadata();
+        ImageSaver.writeWithMetadata(result, path);
+    }
+
+    /**
+     * Saves the processed image with metadata to a file path with the specified format.
+     * This method writes the EXIF metadata to the output file.
+     *
+     * @param path the output path
+     * @param format the image format (e.g., "png", "jpg")
+     * @throws IOException if the file cannot be written
+     */
+    public void toFileWithMetadata(Path path, String format) throws IOException {
+        ImageWithMetadata result = buildWithMetadata();
+        ImageSaver.writeWithMetadata(result, format, path.toFile());
+    }
+
+    /**
      * Writes the processed image to an OutputStream.
      *
      * @param output the output stream
@@ -369,6 +466,18 @@ public final class Scale4jBuilder {
     }
 
     /**
+     * Writes the processed image with metadata to an OutputStream.
+     *
+     * @param output the output stream
+     * @param format the image format
+     * @throws IOException if the image cannot be written
+     */
+    public void toOutputStreamWithMetadata(OutputStream output, String format) throws IOException {
+        ImageWithMetadata result = buildWithMetadata();
+        ImageSaver.writeWithMetadata(result, format, output);
+    }
+
+    /**
      * Returns the processed image as a byte array.
      *
      * @param format the image format
@@ -378,6 +487,20 @@ public final class Scale4jBuilder {
     public byte[] toByteArray(String format) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             toOutputStream(baos, format);
+            return baos.toByteArray();
+        }
+    }
+
+    /**
+     * Returns the processed image with metadata as a byte array.
+     *
+     * @param format the image format
+     * @return the image bytes
+     * @throws IOException if the image cannot be written
+     */
+    public byte[] toByteArrayWithMetadata(String format) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            toOutputStreamWithMetadata(baos, format);
             return baos.toByteArray();
         }
     }
