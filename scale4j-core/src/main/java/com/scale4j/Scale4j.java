@@ -128,6 +128,37 @@ public final class Scale4j {
         return AsyncScale4j.create(executor);
     }
 
+    // ==================== Batch Processing Entry Points ====================
+
+    /**
+     * Creates a new batch processor for processing multiple images.
+     * Use this for applying the same operations to multiple images.
+     *
+     * <p>Example usage:</p>
+     * <pre>{@code
+     * List<BufferedImage> results = Scale4j.batch()
+     *     .images(listOfImages)
+     *     .resize(300, 200)
+     *     .parallel(4)
+     *     .execute();
+     * }</pre>
+     *
+     * @return a new BatchProcessorBuilder instance
+     */
+    public static BatchProcessorBuilder batch() {
+        return new BatchProcessorBuilder();
+    }
+
+    /**
+     * Creates a new batch processor with the specified images.
+     *
+     * @param images the list of images to process
+     * @return a new BatchProcessorBuilder instance
+     */
+    public static BatchProcessorBuilder batch(java.util.List<BufferedImage> images) {
+        return new BatchProcessorBuilder().images(images);
+    }
+
     // ==================== Utility Methods ====================
 
     /**
