@@ -397,9 +397,6 @@ public final class BatchProcessorBuilder {
      * @return the configured BatchProcessor
      */
     public BatchProcessor build() {
-        if (images.isEmpty()) {
-            throw new IllegalStateException("No images to process. Add images using images(), addImage(), or imagesFromFiles()");
-        }
         return new BatchProcessor(images, operationChain, executor, parallelism, preserveOrder);
     }
 
