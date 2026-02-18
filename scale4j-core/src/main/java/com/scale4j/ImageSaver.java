@@ -214,13 +214,8 @@ public final class ImageSaver {
 
         LOGGER.debug("Writing image with metadata to output stream format: {}", format);
         
-        try {
-            ImageOutputStream ios = ImageIO.createImageOutputStream(output);
-            try {
-                return writeWithMetadata(image, metadata, format, ios);
-            } finally {
-                ios.close();
-            }
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(output)) {
+            return writeWithMetadata(image, metadata, format, ios);
         } catch (IOException e) {
             LOGGER.error("Failed to write image with metadata to output stream", e);
             throw new ImageSaveException("Failed to write image with metadata to output stream", null, format, e);

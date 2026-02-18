@@ -61,7 +61,7 @@ public interface Scale4jLogger {
      * Logs a message at TRACE level with arguments.
      *
      * @param message the message pattern
- args the arguments for     * @param the message pattern
+     * @param args the arguments for the message pattern
      */
     void trace(String message, Object... args);
 
