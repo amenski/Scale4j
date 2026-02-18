@@ -19,6 +19,7 @@ import com.scale4j.ops.CropOperation;
 import com.scale4j.ops.PadOperation;
 import com.scale4j.ops.ResizeOperation;
 import com.scale4j.ops.RotateOperation;
+import com.scale4j.filter.FilterOperation;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.ImageWatermark;
@@ -297,6 +298,135 @@ public final class Scale4jBuilder {
                 .position(position)
                 .opacity(opacity)
                 .build());
+    }
+
+    // ==================== Filter Operations ====================
+
+    /**
+     * Applies a Gaussian blur filter to the image.
+     *
+     * @param radius the blur radius (greater than 0)
+     * @return this builder
+     */
+    public Scale4jBuilder blur(float radius) {
+        operations.add(image -> FilterOperation.blur(image, radius));
+        return this;
+    }
+
+    /**
+     * Applies a sharpening filter to the image.
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder sharpen() {
+        operations.add(FilterOperation::sharpen);
+        return this;
+    }
+
+    /**
+     * Applies a sharpening filter with custom strength.
+     *
+     * @param strength the sharpening strength (1.0 = normal, higher = stronger)
+     * @return this builder
+     */
+    public Scale4jBuilder sharpen(float strength) {
+        operations.add(image -> FilterOperation.sharpen(image, strength));
+        return this;
+    }
+
+    /**
+     * Converts the image to grayscale.
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder grayscale() {
+        operations.add(FilterOperation::grayscale);
+        return this;
+    }
+
+    /**
+     * Adjusts the brightness of the image.
+     *
+     * @param factor the brightness factor (1.0 = no change, 2.0 = twice as bright, 0.5 = half as bright)
+     * @return this builder
+     */
+    public Scale4jBuilder brightness(float factor) {
+        operations.add(image -> FilterOperation.brightness(image, factor));
+        return this;
+    }
+
+    /**
+     * Adjusts the brightness by adding an offset.
+     *
+     * @param offset the brightness offset (-255 to 255)
+     * @return this builder
+     */
+    public Scale4jBuilder brightnessOffset(float offset) {
+        operations.add(image -> FilterOperation.brightnessOffset(image, offset));
+        return this;
+    }
+
+    /**
+     * Adjusts the contrast of the image.
+     *
+     * @param factor the contrast factor (1.0 = no change, 2.0 = double contrast, 0.5 = half contrast)
+     * @return this builder
+     */
+    public Scale4jBuilder contrast(float factor) {
+        operations.add(image -> FilterOperation.contrast(image, factor));
+        return this;
+    }
+
+    /**
+     * Applies a sepia tone effect to the image.
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder sepia() {
+        operations.add(FilterOperation::sepia);
+        return this;
+    }
+
+    /**
+     * Applies a sepia tone effect with custom intensity.
+     *
+     * @param intensity the sepia intensity (0.0 = no effect, 1.0 = full sepia)
+     * @return this builder
+     */
+    public Scale4jBuilder sepia(float intensity) {
+        operations.add(image -> FilterOperation.sepia(image, intensity));
+        return this;
+    }
+
+    /**
+     * Applies an edge detection filter using the Sobel operator.
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder edgeDetect() {
+        operations.add(FilterOperation::edgeDetect);
+        return this;
+    }
+
+    /**
+     * Applies a vignette effect to the image.
+     *
+     * @param intensity the vignette intensity (0.0 = no effect, 1.0 = strong vignette)
+     * @return this builder
+     */
+    public Scale4jBuilder vignette(float intensity) {
+        operations.add(image -> FilterOperation.vignette(image, intensity));
+        return this;
+    }
+
+    /**
+     * Inverts the colors of the image.
+     *
+     * @return this builder
+     */
+    public Scale4jBuilder invert() {
+        operations.add(FilterOperation::invert);
+        return this;
     }
 
     // ==================== Output Operations ====================

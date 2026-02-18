@@ -172,7 +172,7 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 | P3 | Error Handling & Logging | Low | Medium | ✅ DONE |
 | P3 | Memory Inefficiency | Medium | Low | ✅ DONE |
 | P4 | Missing Batch Processing API | Medium | Low | ✅ DONE |
-| P4 | No Image Filters / Effects | High | Medium | |
+| P4 | No Image Filters / Effects | High | Medium | ✅ DONE |
 | P5 | Documentation for Extensions | Low | Low | |
 
 ---

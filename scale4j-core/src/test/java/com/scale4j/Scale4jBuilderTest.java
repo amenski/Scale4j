@@ -221,4 +221,130 @@ class Scale4jBuilderTest {
         assertThat(result.getWidth()).isEqualTo(100);
         assertThat(result.getHeight()).isEqualTo(50);
     }
+
+    // ==================== Filter Tests ====================
+
+    @Test
+    void builder_blur() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .blur(5.0f)
+                .build();
+        assertThat(result).isNotNull();
+        assertThat(result.getWidth()).isEqualTo(100);
+        assertThat(result.getHeight()).isEqualTo(100);
+    }
+
+    @Test
+    void builder_sharpen() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .sharpen()
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_sharpenWithStrength() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .sharpen(2.0f)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_grayscale() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .grayscale()
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_brightness() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .brightness(1.5f)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_brightnessOffset() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .brightnessOffset(50)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_contrast() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .contrast(1.5f)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_sepia() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .sepia()
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_sepiaWithIntensity() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .sepia(0.5f)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_edgeDetect() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .edgeDetect()
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_vignette() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .vignette(0.5f)
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_invert() {
+        BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .invert()
+                .build();
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void builder_chainFiltersWithOperations() {
+        BufferedImage source = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = Scale4j.load(source)
+                .resize(100, 75)
+                .grayscale()
+                .blur(2.0f)
+                .brightness(1.2f)
+                .contrast(1.1f)
+                .build();
+        assertThat(result.getWidth()).isEqualTo(100);
+        assertThat(result.getHeight()).isEqualTo(75);
+    }
 }
