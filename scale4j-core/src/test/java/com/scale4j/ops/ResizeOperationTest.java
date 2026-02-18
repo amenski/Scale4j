@@ -16,13 +16,19 @@
 package com.scale4j.ops;
 
 import com.scale4j.types.ResizeMode;
+import com.scale4j.exception.ImageProcessException;
 import com.scale4j.types.ResizeQuality;
+import com.scale4j.exception.ImageProcessException;
 import org.junit.jupiter.api.Test;
+import com.scale4j.exception.ImageProcessException;
 
 import java.awt.image.BufferedImage;
+import com.scale4j.exception.ImageProcessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.scale4j.exception.ImageProcessException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.scale4j.exception.ImageProcessException;
 
 class ResizeOperationTest {
 

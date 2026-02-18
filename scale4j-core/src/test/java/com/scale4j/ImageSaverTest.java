@@ -15,18 +15,28 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageSaveException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import com.scale4j.exception.ImageProcessException;
 
 import java.awt.image.BufferedImage;
+import com.scale4j.exception.ImageProcessException;
 import java.io.ByteArrayOutputStream;
+import com.scale4j.exception.ImageProcessException;
 import java.io.File;
+import com.scale4j.exception.ImageProcessException;
 import java.io.IOException;
+import com.scale4j.exception.ImageProcessException;
 import java.io.OutputStream;
+import com.scale4j.exception.ImageProcessException;
 import java.nio.file.Path;
+import com.scale4j.exception.ImageProcessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.scale4j.exception.ImageProcessException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.scale4j.exception.ImageProcessException;
 
 /**
  * Unit tests for ImageSaver.
@@ -69,7 +79,7 @@ class ImageSaverTest {
         File output = tempDir.resolve("out.png").toFile();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, output))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ImageSaveException.class);
     }
 
     @Test
@@ -147,7 +157,7 @@ class ImageSaverTest {
         OutputStream out = new ByteArrayOutputStream();
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(null, "png", out))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ImageSaveException.class);
     }
 
     @Test
@@ -155,7 +165,7 @@ class ImageSaverTest {
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         // ImageIO.write will throw NullPointerException
         assertThatThrownBy(() -> ImageSaver.write(image, "png", (OutputStream) null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ImageSaveException.class);
     }
 
     @Test

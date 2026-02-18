@@ -15,19 +15,30 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import com.scale4j.exception.ImageProcessException;
 
 import java.awt.image.BufferedImage;
+import com.scale4j.exception.ImageProcessException;
 import java.io.ByteArrayInputStream;
+import com.scale4j.exception.ImageProcessException;
 import java.io.File;
+import com.scale4j.exception.ImageProcessException;
 import java.io.IOException;
+import com.scale4j.exception.ImageProcessException;
 import java.io.InputStream;
+import com.scale4j.exception.ImageProcessException;
 import java.net.URL;
+import com.scale4j.exception.ImageProcessException;
 import java.nio.file.Path;
+import com.scale4j.exception.ImageProcessException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.scale4j.exception.ImageProcessException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.scale4j.exception.ImageProcessException;
 
 /**
  * Unit tests for ImageLoader.
@@ -53,7 +64,7 @@ class ImageLoaderTest {
     @Test
     void load_file_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((File) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("File cannot be null");
     }
 
@@ -61,7 +72,7 @@ class ImageLoaderTest {
     void load_file_notExists_throwsIOException() {
         File missing = new File("/non/existent/file.png");
         assertThatThrownBy(() -> ImageLoader.load(missing))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("File does not exist");
     }
 
@@ -72,7 +83,7 @@ class ImageLoaderTest {
         corrupt.createNewFile(); // empty file
 
         assertThatThrownBy(() -> ImageLoader.load(corrupt))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("Unable to read image file");
     }
 
@@ -106,7 +117,7 @@ class ImageLoaderTest {
     @Test
     void load_inputStream_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((InputStream) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("InputStream cannot be null");
     }
 
@@ -114,14 +125,14 @@ class ImageLoaderTest {
     void load_inputStream_corrupt_throwsIOException() {
         InputStream stream = new ByteArrayInputStream(new byte[]{0, 1, 2});
         assertThatThrownBy(() -> ImageLoader.load(stream))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("Unable to read image from InputStream");
     }
 
     @Test
     void load_url_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((URL) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("URL cannot be null");
     }
 

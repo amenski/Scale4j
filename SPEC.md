@@ -1,30 +1,26 @@
 ## Issue
-Scale4j does not preserve EXIF (or other) metadata when loading, processing, and saving images. This is a critical requirement for photography applications.
+Operations create many intermediate BufferedImage objects, causing high memory pressure. No pooling or reuse of image buffers.
 
 ## Impact
-Loss of orientation, camera settings, geotags, etc., making the library unsuitable for many real‑world image pipelines.
+High GC overhead, poor performance on large images or batch processing, memory spikes.
 
 ## Task
-Integrate a lightweight metadata library (e.g., Apache Sanselan, TwelveMonkeys ImageIO) to read metadata from source images and re‑attach it to processed outputs. At a minimum, preserve orientation tags and apply automatic rotation.
+Introduce a simple image pool (SoftReference-based) for common sizes/color models. Add configurable pooling strategy (none, soft, thread-local). Provide memory usage monitoring hooks.
 
 ## Implementation Details
-1. Add TwelveMonkeys ImageIO dependency to scale4j-core/pom.xml
-2. Create `com.scale4j.metadata` package with:
-   - `ExifMetadata` class to read/write EXIF data
-   - `ExifOrientation` enum for orientation values
-3. Update `ImageLoader` to read and store metadata
-4. Update `ImageSaver` to write metadata to output
-5. Add automatic rotation based on orientation tag
-6. Add unit tests for metadata preservation
+1. Create `ImagePool` interface
+2. Create `SoftReferenceImagePool` implementation
+3. Create `ImagePoolManager` singleton
+4. Update operations to use pool for intermediate images
+5. Add configuration options
+6. Add memory monitoring
 
 ## Verification Checklist
-- [ ] TwelveMonkeys ImageIO dependency added to scale4j-core
-- [ ] ExifMetadata class created with read/write methods
-- [ ] ExifOrientation enum with all 8 orientation values
-- [ ] ImageLoader preserves metadata when loading
-- [ ] ImageSaver writes metadata to output
-- [ ] Automatic rotation applied based on orientation
-- [ ] Unit tests for metadata preservation
-- [ ] Unit tests for automatic rotation
-- [ ] Compilation passes (mvn compile)
-- [ ] Tests pass (mvn test)
+- [ ] ImagePool interface created
+- [ ] SoftReferenceImagePool implementation
+- [ ] ImagePoolManager singleton
+- [ ] Operations updated to use pool
+- [ ] Configuration options added
+- [ ] Memory monitoring hooks
+- [ ] Compilation passes
+- [ ] Tests pass

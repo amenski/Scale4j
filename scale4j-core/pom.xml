@@ -18,7 +18,6 @@
 
     <dependencies>
         <!-- TwelveMonkeys ImageIO for extended format support (optional) -->
-        <!-- Using standard javax.imageio for metadata - no external dependency needed -->
     </dependencies>
 
     <build>
