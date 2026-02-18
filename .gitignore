@@ -35,3 +35,14 @@ Thumbs.db
 surefire-reports/
 failsafe-reports/
 jacoco/
+
+# Generated test images
+watermark-test-output/
+debug-watermark-output/
+debug-watermark-final/
+visual-test-output/
+image-watermark-output/
+
+# Test utilities and generated classes
+TestRefactored.class
+TestRefactored.java

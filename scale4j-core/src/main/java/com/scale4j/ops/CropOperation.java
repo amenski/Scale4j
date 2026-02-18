@@ -15,12 +15,18 @@
  */
 package com.scale4j.ops;
 
+import com.scale4j.exception.ImageProcessException;
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
+
 import java.awt.image.BufferedImage;
 
 /**
  * Operation for cropping images.
  */
 public final class CropOperation {
+
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(CropOperation.class);
 
     private CropOperation() {
         // Utility class
@@ -35,18 +41,29 @@ public final class CropOperation {
      * @param width the width of the crop region
      * @param height the height of the crop region
      * @return the cropped image
+     * @throws ImageProcessException if the crop operation fails
      */
-    public static BufferedImage crop(BufferedImage source, int x, int y, int width, int height) {
+    public static BufferedImage crop(BufferedImage source, int x, int y, int width, int height) throws ImageProcessException {
+        LOGGER.debug("Cropping image: x={} y={} width={} height={}", x, y, width, height);
+        
         if (source == null) {
-            throw new IllegalArgumentException("Source image cannot be null");
+            throw new ImageProcessException("Source image cannot be null", "crop");
         }
         if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException("Crop dimensions must be positive");
+            throw new ImageProcessException(
+                    String.format("Crop dimensions must be positive: width=%d, height=%d", width, height), 
+                    "crop", source.getWidth(), source.getHeight());
         }
         if (x < 0 || y < 0 || x + width > source.getWidth() || y + height > source.getHeight()) {
-            throw new IllegalArgumentException("Crop region exceeds image bounds");
+            throw new ImageProcessException(
+                    String.format("Crop region (x=%d, y=%d, w=%d, h=%d) exceeds image bounds (%dx%d)",
+                            x, y, width, height, source.getWidth(), source.getHeight()),
+                    "crop", source.getWidth(), source.getHeight());
         }
 
+        LOGGER.info("Successfully cropped image: {}x{} -> {}x{}", 
+                source.getWidth(), source.getHeight(), width, height);
+        
         return source.getSubimage(x, y, width, height);
     }
 }

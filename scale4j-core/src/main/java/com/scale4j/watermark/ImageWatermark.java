@@ -15,6 +15,7 @@
  */
 package com.scale4j.watermark;
 
+
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -64,8 +65,10 @@ public final class ImageWatermark implements Watermark {
         g2d.drawImage(image, 0, 0, watermarkWidth, watermarkHeight, null);
         g2d.dispose();
 
-        // Calculate position
-        int[] coords = position.calculate(target.getWidth(), target.getHeight(), watermarkWidth, watermarkHeight);
+        // Calculate position using ImageWatermarkPositionCalculator (margin = 0)
+        ImageWatermarkPositionCalculator calculator = ImageWatermarkPositionCalculator.getInstance();
+        int[] coords = calculator.calculate(
+            target.getWidth(), target.getHeight(), watermarkWidth, watermarkHeight, position, 0);
         int x = coords[0];
         int y = coords[1];
 

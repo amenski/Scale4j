@@ -15,6 +15,9 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.util.ImageFormatUtils;
 
@@ -31,7 +34,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +41,7 @@ import java.util.logging.Logger;
  */
 final class ImageLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(ImageLoader.class);
 
     private ImageLoader() {
         // Utility class
@@ -50,20 +52,31 @@ final class ImageLoader {
      *
      * @param file the source file
      * @return the loaded BufferedImage
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    static BufferedImage load(File file) throws IOException {
+    static BufferedImage load(File file) throws ImageLoadException {
+        LOGGER.debug("Loading image from file: {}", file);
         if (file == null) {
-            throw new IllegalArgumentException("File cannot be null");
+            throw new ImageLoadException("File cannot be null", null, "file");
         }
         if (!file.exists()) {
-            throw new IOException("File does not exist: " + file.getAbsolutePath());
+            throw new ImageLoadException("File does not exist: " + file.getAbsolutePath(), 
+                    file.getAbsolutePath(), "file");
         }
-        BufferedImage image = ImageIO.read(file);
-        if (image == null) {
-            throw new IOException("Unable to read image file: " + file.getAbsolutePath());
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image file: " + file.getAbsolutePath(), 
+                        file.getAbsolutePath(), "file");
+            }
+            LOGGER.info("Successfully loaded image from file: {} ({}x{})", 
+                    file.getName(), image.getWidth(), image.getHeight());
+            return image;
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image from file: {}", file.getAbsolutePath(), e);
+            throw new ImageLoadException("Failed to read image file: " + file.getAbsolutePath(), 
+                    file.getAbsolutePath(), "file", e);
         }
-        return image;
     }
 
     /**
@@ -71,9 +84,10 @@ final class ImageLoader {
      *
      * @param path the file path
      * @return the loaded BufferedImage
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    static BufferedImage load(Path path) throws IOException {
+    static BufferedImage load(Path path) throws ImageLoadException {
+        LOGGER.debug("Loading image from path: {}", path);
         return load(path.toFile());
     }
 
@@ -82,17 +96,25 @@ final class ImageLoader {
      *
      * @param stream the input stream
      * @return the loaded BufferedImage
-     * @throws IOException if the stream cannot be read
+     * @throws ImageLoadException if the stream cannot be read
      */
-    static BufferedImage load(InputStream stream) throws IOException {
+    static BufferedImage load(InputStream stream) throws ImageLoadException {
+        LOGGER.debug("Loading image from input stream");
         if (stream == null) {
-            throw new IllegalArgumentException("InputStream cannot be null");
+            throw new ImageLoadException("InputStream cannot be null", null, "stream");
         }
-        BufferedImage image = ImageIO.read(stream);
-        if (image == null) {
-            throw new IOException("Unable to read image from InputStream");
+        try {
+            BufferedImage image = ImageIO.read(stream);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image from InputStream", null, "stream");
+            }
+            LOGGER.info("Successfully loaded image from stream ({}x{})", 
+                    image.getWidth(), image.getHeight());
+            return image;
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image from stream", e);
+            throw new ImageLoadException("Failed to read image from InputStream", null, "stream", e);
         }
-        return image;
     }
 
     /**
@@ -100,17 +122,27 @@ final class ImageLoader {
      *
      * @param url the source URL
      * @return the loaded BufferedImage
-     * @throws IOException if the URL cannot be read
+     * @throws ImageLoadException if the URL cannot be read
      */
-    static BufferedImage load(URL url) throws IOException {
+    static BufferedImage load(URL url) throws ImageLoadException {
+        LOGGER.debug("Loading image from URL: {}", url);
         if (url == null) {
-            throw new IllegalArgumentException("URL cannot be null");
+            throw new ImageLoadException("URL cannot be null", null, "url");
         }
-        BufferedImage image = ImageIO.read(url);
-        if (image == null) {
-            throw new IOException("Unable to read image from URL: " + url);
+        try {
+            BufferedImage image = ImageIO.read(url);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image from URL: " + url, 
+                        url.toString(), "url");
+            }
+            LOGGER.info("Successfully loaded image from URL: {} ({}x{})", 
+                    url, image.getWidth(), image.getHeight());
+            return image;
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image from URL: {}", url, e);
+            throw new ImageLoadException("Failed to read image from URL: " + url, 
+                    url.toString(), "url", e);
         }
-        return image;
     }
 
     /**
@@ -147,25 +179,35 @@ final class ImageLoader {
      *
      * @param file the source file
      * @return the loaded BufferedImage with metadata
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    static ImageWithMetadata loadWithMetadata(File file) throws IOException {
+    static ImageWithMetadata loadWithMetadata(File file) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from file: {}", file);
         if (file == null) {
-            throw new IllegalArgumentException("File cannot be null");
+            throw new ImageLoadException("File cannot be null", null, "file");
         }
         if (!file.exists()) {
-            throw new IOException("File does not exist: " + file.getAbsolutePath());
+            throw new ImageLoadException("File does not exist: " + file.getAbsolutePath(), 
+                    file.getAbsolutePath(), "file");
         }
 
         String format = getFormatFromFile(file);
         ExifMetadata metadata = readMetadata(file);
-        BufferedImage image = ImageIO.read(file);
         
-        if (image == null) {
-            throw new IOException("Unable to read image file: " + file.getAbsolutePath());
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image file: " + file.getAbsolutePath(), 
+                        file.getAbsolutePath(), "file");
+            }
+            LOGGER.info("Successfully loaded image with metadata from file: {} ({}x{})", 
+                    file.getName(), image.getWidth(), image.getHeight());
+            return new ImageWithMetadata(image, metadata, format);
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image with metadata from file: {}", file.getAbsolutePath(), e);
+            throw new ImageLoadException("Failed to read image file with metadata: " + file.getAbsolutePath(), 
+                    file.getAbsolutePath(), "file", e);
         }
-        
-        return new ImageWithMetadata(image, metadata, format);
     }
 
     /**
@@ -173,9 +215,9 @@ final class ImageLoader {
      *
      * @param path the file path
      * @return the loaded BufferedImage with metadata
-     * @throws IOException if the file cannot be read
+     * @throws ImageLoadException if the file cannot be read
      */
-    static ImageWithMetadata loadWithMetadata(Path path) throws IOException {
+    static ImageWithMetadata loadWithMetadata(Path path) throws ImageLoadException {
         return loadWithMetadata(path.toFile());
     }
 
@@ -184,18 +226,26 @@ final class ImageLoader {
      *
      * @param stream the input stream
      * @return the loaded BufferedImage with metadata
-     * @throws IOException if the stream cannot be read
+     * @throws ImageLoadException if the stream cannot be read
      */
-    static ImageWithMetadata loadWithMetadata(InputStream stream) throws IOException {
+    static ImageWithMetadata loadWithMetadata(InputStream stream) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from input stream");
         if (stream == null) {
-            throw new IllegalArgumentException("InputStream cannot be null");
+            throw new ImageLoadException("InputStream cannot be null", null, "stream");
         }
         // Note: InputStream may not support mark/reset, so metadata reading is limited
-        BufferedImage image = ImageIO.read(stream);
-        if (image == null) {
-            throw new IOException("Unable to read image from InputStream");
+        try {
+            BufferedImage image = ImageIO.read(stream);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image from InputStream", null, "stream");
+            }
+            LOGGER.info("Successfully loaded image with metadata from stream ({}x{})", 
+                    image.getWidth(), image.getHeight());
+            return new ImageWithMetadata(image, null, null);
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image with metadata from stream", e);
+            throw new ImageLoadException("Failed to read image from InputStream", null, "stream", e);
         }
-        return new ImageWithMetadata(image, null, null);
     }
 
     /**
@@ -203,17 +253,27 @@ final class ImageLoader {
      *
      * @param url the source URL
      * @return the loaded BufferedImage with metadata
-     * @throws IOException if the URL cannot be read
+     * @throws ImageLoadException if the URL cannot be read
      */
-    static ImageWithMetadata loadWithMetadata(URL url) throws IOException {
+    static ImageWithMetadata loadWithMetadata(URL url) throws ImageLoadException {
+        LOGGER.debug("Loading image with metadata from URL: {}", url);
         if (url == null) {
-            throw new IllegalArgumentException("URL cannot be null");
+            throw new ImageLoadException("URL cannot be null", null, "url");
         }
-        BufferedImage image = ImageIO.read(url);
-        if (image == null) {
-            throw new IOException("Unable to read image from URL: " + url);
+        try {
+            BufferedImage image = ImageIO.read(url);
+            if (image == null) {
+                throw new ImageLoadException("Unable to read image from URL: " + url, 
+                        url.toString(), "url");
+            }
+            LOGGER.info("Successfully loaded image with metadata from URL: {} ({}x{})", 
+                    url, image.getWidth(), image.getHeight());
+            return new ImageWithMetadata(image, null, null);
+        } catch (IOException e) {
+            LOGGER.error("Failed to load image with metadata from URL: {}", url, e);
+            throw new ImageLoadException("Failed to read image from URL: " + url, 
+                    url.toString(), "url", e);
         }
-        return new ImageWithMetadata(image, null, null);
     }
 
     /**
@@ -223,6 +283,7 @@ final class ImageLoader {
      * @return the ExifMetadata, or null if no metadata could be read
      */
     private static ExifMetadata readMetadata(File file) {
+        LOGGER.trace("Reading EXIF metadata from file: {}", file);
         try (ImageInputStream iis = ImageIO.createImageInputStream(file)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (readers.hasNext()) {
@@ -232,13 +293,16 @@ final class ImageLoader {
                     IIOMetadata imageMetadata = reader.getImageMetadata(0);
                     ExifMetadata exif = new ExifMetadata();
                     exif.setOrientation(exif.readOrientationFromMetadata(imageMetadata));
+                    // Note: We're storing just the orientation, not the full metadata
+                    // to avoid issues with metadata serialization
+                    LOGGER.trace("Successfully read EXIF metadata: orientation={}", exif.getOrientation());
                     return exif;
                 } finally {
                     reader.dispose();
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to read EXIF metadata from file: " + file.getName(), e);
+            LOGGER.warn("Failed to read EXIF metadata from file: {}", file, e);
         }
         return null;
     }

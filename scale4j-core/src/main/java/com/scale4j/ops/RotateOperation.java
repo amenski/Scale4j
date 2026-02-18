@@ -15,6 +15,9 @@
  */
 package com.scale4j.ops;
 
+import com.scale4j.exception.ImageProcessException;
+import com.scale4j.util.ImageTypeUtils;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -50,7 +53,7 @@ public final class RotateOperation {
      */
     public static BufferedImage rotate(BufferedImage source, double degrees, Color backgroundColor) {
         if (source == null) {
-            throw new IllegalArgumentException("Source image cannot be null");
+            throw new ImageProcessException("Source image cannot be null", "rotate");
         }
 
         // Normalize degrees to 0-360 range
@@ -83,7 +86,7 @@ public final class RotateOperation {
         int newHeight = (int) (sourceWidth * sin + sourceHeight * cos);
 
         // Create the rotated image
-        BufferedImage rotated = new BufferedImage(newWidth, newHeight, source.getType());
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha()));
         Graphics2D g2d = rotated.createGraphics();
 
         // Set background
@@ -112,7 +115,7 @@ public final class RotateOperation {
         int width = source.getWidth();
         int height = source.getHeight();
 
-        BufferedImage rotated = new BufferedImage(height, width, source.getType());
+        BufferedImage rotated = new BufferedImage(height, width, ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha()));
         Graphics2D g2d = rotated.createGraphics();
 
         if (backgroundColor != null) {
@@ -135,7 +138,7 @@ public final class RotateOperation {
         int width = source.getWidth();
         int height = source.getHeight();
 
-        BufferedImage rotated = new BufferedImage(height, width, source.getType());
+        BufferedImage rotated = new BufferedImage(height, width, ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha()));
         Graphics2D g2d = rotated.createGraphics();
 
         if (backgroundColor != null) {
@@ -157,7 +160,7 @@ public final class RotateOperation {
         int width = source.getWidth();
         int height = source.getHeight();
 
-        BufferedImage rotated = new BufferedImage(width, height, source.getType());
+        BufferedImage rotated = new BufferedImage(width, height, ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha()));
         Graphics2D g2d = rotated.createGraphics();
 
         if (backgroundColor != null) {

@@ -47,58 +47,5 @@ public enum WatermarkPosition {
     /** Bottom-right corner */
     BOTTOM_RIGHT;
 
-    /**
-     * Calculates the position coordinates for a watermark.
-     *
-     * @param imageWidth the width of the base image
-     * @param imageHeight the height of the base image
-     * @param watermarkWidth the width of the watermark
-     * @param watermarkHeight the height of the watermark
-     * @return an array containing [x, y] coordinates
-     */
-    public int[] calculate(int imageWidth, int imageHeight, int watermarkWidth, int watermarkHeight) {
-        int x = 0;
-        int y = 0;
 
-        switch (this) {
-            case TOP_LEFT:
-                x = 0;
-                y = 0;
-                break;
-            case TOP_CENTER:
-                x = (imageWidth - watermarkWidth) / 2;
-                y = 0;
-                break;
-            case TOP_RIGHT:
-                x = imageWidth - watermarkWidth;
-                y = 0;
-                break;
-            case MIDDLE_LEFT:
-                x = 0;
-                y = (imageHeight - watermarkHeight) / 2;
-                break;
-            case CENTER:
-                x = (imageWidth - watermarkWidth) / 2;
-                y = (imageHeight - watermarkHeight) / 2;
-                break;
-            case MIDDLE_RIGHT:
-                x = imageWidth - watermarkWidth;
-                y = (imageHeight - watermarkHeight) / 2;
-                break;
-            case BOTTOM_LEFT:
-                x = 0;
-                y = imageHeight - watermarkHeight;
-                break;
-            case BOTTOM_CENTER:
-                x = (imageWidth - watermarkWidth) / 2;
-                y = imageHeight - watermarkHeight;
-                break;
-            case BOTTOM_RIGHT:
-                x = imageWidth - watermarkWidth;
-                y = imageHeight - watermarkHeight;
-                break;
-        }
-
-        return new int[]{x, y};
-    }
 }

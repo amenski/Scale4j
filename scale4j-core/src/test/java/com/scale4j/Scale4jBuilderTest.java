@@ -15,6 +15,7 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageProcessException;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.WatermarkPosition;
@@ -39,8 +40,8 @@ class Scale4jBuilderTest {
     @Test
     void builder_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> Scale4j.load((BufferedImage) null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Source image cannot be null");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("Source image cannot be null");
     }
 
     @Test
@@ -197,8 +198,8 @@ class Scale4jBuilderTest {
         assertThatThrownBy(() -> Scale4j.load(source)
                 .crop(90, 90, 20, 20)
                 .build())
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Crop region exceeds image bounds");
+                .isInstanceOf(ImageProcessException.class)
+                .hasMessageContaining("exceeds image bounds");
     }
 
     @Test
@@ -207,7 +208,7 @@ class Scale4jBuilderTest {
         assertThatThrownBy(() -> Scale4j.load(source)
                 .resize(-10, 50)
                 .build())
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessageContaining("Target dimensions must be positive");
     }
 

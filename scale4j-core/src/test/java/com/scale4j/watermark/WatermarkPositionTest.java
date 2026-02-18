@@ -34,7 +34,8 @@ class WatermarkPositionTest {
         int watermarkWidth = 100;
         int watermarkHeight = 50;
 
-        int[] coords = position.calculate(imageWidth, imageHeight, watermarkWidth, watermarkHeight);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(
+            imageWidth, imageHeight, watermarkWidth, watermarkHeight, position, 0);
         assertThat(coords).hasSize(2);
         int x = coords[0];
         int y = coords[1];
@@ -47,55 +48,55 @@ class WatermarkPositionTest {
 
     @Test
     void calculate_topLeft() {
-        int[] coords = WatermarkPosition.TOP_LEFT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.TOP_LEFT, 0);
         assertThat(coords).containsExactly(0, 0);
     }
 
     @Test
     void calculate_topCenter() {
-        int[] coords = WatermarkPosition.TOP_CENTER.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.TOP_CENTER, 0);
         assertThat(coords).containsExactly((800 - 100) / 2, 0);
     }
 
     @Test
     void calculate_topRight() {
-        int[] coords = WatermarkPosition.TOP_RIGHT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.TOP_RIGHT, 0);
         assertThat(coords).containsExactly(800 - 100, 0);
     }
 
     @Test
     void calculate_middleLeft() {
-        int[] coords = WatermarkPosition.MIDDLE_LEFT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.MIDDLE_LEFT, 0);
         assertThat(coords).containsExactly(0, (600 - 50) / 2);
     }
 
     @Test
     void calculate_center() {
-        int[] coords = WatermarkPosition.CENTER.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.CENTER, 0);
         assertThat(coords).containsExactly((800 - 100) / 2, (600 - 50) / 2);
     }
 
     @Test
     void calculate_middleRight() {
-        int[] coords = WatermarkPosition.MIDDLE_RIGHT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.MIDDLE_RIGHT, 0);
         assertThat(coords).containsExactly(800 - 100, (600 - 50) / 2);
     }
 
     @Test
     void calculate_bottomLeft() {
-        int[] coords = WatermarkPosition.BOTTOM_LEFT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.BOTTOM_LEFT, 0);
         assertThat(coords).containsExactly(0, 600 - 50);
     }
 
     @Test
     void calculate_bottomCenter() {
-        int[] coords = WatermarkPosition.BOTTOM_CENTER.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.BOTTOM_CENTER, 0);
         assertThat(coords).containsExactly((800 - 100) / 2, 600 - 50);
     }
 
     @Test
     void calculate_bottomRight() {
-        int[] coords = WatermarkPosition.BOTTOM_RIGHT.calculate(800, 600, 100, 50);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(800, 600, 100, 50, WatermarkPosition.BOTTOM_RIGHT, 0);
         assertThat(coords).containsExactly(800 - 100, 600 - 50);
     }
 
@@ -105,13 +106,13 @@ class WatermarkPositionTest {
         // they would be negative because imageWidth - watermarkWidth < 0.
         // The calculate method does not clamp; it returns negative values.
         // That's okay because caller should handle scaling.
-        int[] coords = WatermarkPosition.TOP_LEFT.calculate(50, 50, 100, 100);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(50, 50, 100, 100, WatermarkPosition.TOP_LEFT, 0);
         assertThat(coords).containsExactly(0, 0); // still 0,0
     }
 
     @Test
     void calculate_watermarkSameSizeAsImage() {
-        int[] coords = WatermarkPosition.CENTER.calculate(100, 100, 100, 100);
+        int[] coords = ImageWatermarkPositionCalculator.getInstance().calculate(100, 100, 100, 100, WatermarkPosition.CENTER, 0);
         assertThat(coords).containsExactly(0, 0);
     }
 }

@@ -15,13 +15,13 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
@@ -38,7 +38,7 @@ class ImageLoaderTest {
     Path tempDir;
 
     @Test
-    void load_file_validImage() throws IOException {
+    void load_file_validImage() throws ImageLoadException {
         // Create a temporary PNG file
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         File tempFile = tempDir.resolve("test.png").toFile();
@@ -51,33 +51,33 @@ class ImageLoaderTest {
     }
 
     @Test
-    void load_file_null_throwsIllegalArgumentException() {
+    void load_file_null_throwsImageLoadException() {
         assertThatThrownBy(() -> ImageLoader.load((File) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("File cannot be null");
     }
 
     @Test
-    void load_file_notExists_throwsIOException() {
+    void load_file_notExists_throwsImageLoadException() {
         File missing = new File("/non/existent/file.png");
         assertThatThrownBy(() -> ImageLoader.load(missing))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("File does not exist");
     }
 
     @Test
-    void load_file_corruptImage_throwsIOException() throws IOException {
+    void load_file_corruptImage_throwsImageLoadException() throws Exception {
         // Create a file that is not a valid image
         File corrupt = tempDir.resolve("corrupt.png").toFile();
         corrupt.createNewFile(); // empty file
 
         assertThatThrownBy(() -> ImageLoader.load(corrupt))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("Unable to read image file");
     }
 
     @Test
-    void load_path_validImage() throws IOException {
+    void load_path_validImage() throws ImageLoadException {
         BufferedImage source = new BufferedImage(50, 50, BufferedImage.TYPE_INT_RGB);
         Path tempPath = tempDir.resolve("test.jpg");
         File tempFile = tempPath.toFile();
@@ -90,7 +90,7 @@ class ImageLoaderTest {
     }
 
     @Test
-    void load_inputStream_validImage() throws IOException {
+    void load_inputStream_validImage() throws ImageLoadException {
         BufferedImage source = new BufferedImage(80, 60, BufferedImage.TYPE_INT_RGB);
         byte[] bytes = Scale4j.load(source)
                 .resize(80, 60)
@@ -104,37 +104,37 @@ class ImageLoaderTest {
     }
 
     @Test
-    void load_inputStream_null_throwsIllegalArgumentException() {
+    void load_inputStream_null_throwsImageLoadException() {
         assertThatThrownBy(() -> ImageLoader.load((InputStream) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("InputStream cannot be null");
     }
 
     @Test
-    void load_inputStream_corrupt_throwsIOException() {
+    void load_inputStream_corrupt_throwsImageLoadException() {
         InputStream stream = new ByteArrayInputStream(new byte[]{0, 1, 2});
         assertThatThrownBy(() -> ImageLoader.load(stream))
-                .isInstanceOf(IOException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("Unable to read image from InputStream");
     }
 
     @Test
-    void load_url_null_throwsIllegalArgumentException() {
+    void load_url_null_throwsImageLoadException() {
         assertThatThrownBy(() -> ImageLoader.load((URL) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageLoadException.class)
                 .hasMessage("URL cannot be null");
     }
 
     @Test
-    void load_url_invalid_throwsIOException() {
+    void load_url_invalid_throwsImageLoadException() {
         URL invalid = null;
         try {
             invalid = new URL("http://nonexistent.example.com/image.png");
         } catch (Exception e) {
             // ignore
         }
-        // This test may fail due to network connectivity; we can skip or expect IOException.
-        // For simplicity, we'll assume it throws IOException (or maybe unknown host).
+        // This test may fail due to network connectivity; we can skip or expect ImageLoadException.
+        // For simplicity, we'll assume it throws ImageLoadException (or maybe unknown host).
         // We'll just test that null URL throws.
     }
 

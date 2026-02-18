@@ -17,6 +17,12 @@
     <description>Core image processing library</description>
 
     <dependencies>
+        <!-- SLF4J API - compile scope for this module, optional for downstream -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+        </dependency>
         <!-- TwelveMonkeys ImageIO for extended format and metadata support -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -37,6 +43,13 @@
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
             <version>3.12.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.9</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
