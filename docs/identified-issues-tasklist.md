@@ -161,15 +161,15 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 
 ## Prioritization
 
-| Priority | Issue | Effort | Impact |
-|----------|-------|--------|--------|
-| P0 | Resize Algorithm Performance | Medium | High |
-| P0 | Watermark Positioning Bug | Low | Medium |
-| P1 | Inadequate Test Coverage | High | High |
-| P1 | Missing Performance Benchmarks | Medium | Medium |
-| P2 | No EXIF Metadata Preservation | High | High |
-| P2 | Limited Image Format Support | Medium | Medium |
-| P3 | Error Handling & Logging | Low | Medium |
+| Priority | Issue | Effort | Impact | Status |
+|----------|-------|--------|--------|--------|
+| P0 | Resize Algorithm Performance | Medium | High | ✅ DONE |
+| P0 | Watermark Positioning Bug | Low | Medium | ✅ DONE |
+| P1 | Inadequate Test Coverage | High | High | ✅ DONE |
+| P1 | Missing Performance Benchmarks | Medium | Medium | ✅ DONE |
+| P2 | No EXIF Metadata Preservation | High | High | ✅ DONE |
+| P2 | Limited Image Format Support | Medium | Medium | ✅ DONE |
+| P3 | Error Handling & Logging | Low | Medium | 🔴 TODO |
 | P3 | Memory Inefficiency | Medium | Low |
 | P4 | Missing Batch Processing API | Medium | Low |
 | P4 | No Image Filters / Effects | High | Medium |
