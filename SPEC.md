@@ -1,30 +1,27 @@
 ## Issue
-Scale4j does not preserve EXIF (or other) metadata when loading, processing, and saving images. This is a critical requirement for photography applications.
+Exceptions are generic (IllegalArgumentException, RuntimeException, IOException) with minimal context. No logging facade or configuration hooks.
 
 ## Impact
-Loss of orientation, camera settings, geotags, etc., making the library unsuitable for many real‑world image pipelines.
+Difficult to diagnose failures in production; cannot integrate with application monitoring.
 
 ## Task
-Integrate a lightweight metadata library (e.g., Apache Sanselan, TwelveMonkeys ImageIO) to read metadata from source images and re‑attach it to processed outputs. At a minimum, preserve orientation tags and apply automatic rotation.
+Introduce a dedicated exception hierarchy (Scale4jException, ImageLoadException, ImageProcessException, etc.) with detailed messages and optional cause chains. Provide a Scale4jLogger interface (SLF4J optional) for debug/trace output.
 
 ## Implementation Details
-1. Add TwelveMonkeys ImageIO dependency to scale4j-core/pom.xml
-2. Create `com.scale4j.metadata` package with:
-   - `ExifMetadata` class to read/write EXIF data
-   - `ExifOrientation` enum for orientation values
-3. Update `ImageLoader` to read and store metadata
-4. Update `ImageSaver` to write metadata to output
-5. Add automatic rotation based on orientation tag
-6. Add unit tests for metadata preservation
+1. Create `com.scale4j.exception` package
+2. Create base `Scale4jException` class
+3. Create specific exceptions: `ImageLoadException`, `ImageProcessException`, `ImageSaveException`
+4. Create `Scale4jLogger` interface
+5. Add SLF4J support (optional dependency)
+6. Update existing code to throw specific exceptions
+7. Add logging calls throughout
 
 ## Verification Checklist
-- [ ] TwelveMonkeys ImageIO dependency added to scale4j-core
-- [ ] ExifMetadata class created with read/write methods
-- [ ] ExifOrientation enum with all 8 orientation values
-- [ ] ImageLoader preserves metadata when loading
-- [ ] ImageSaver writes metadata to output
-- [ ] Automatic rotation applied based on orientation
-- [ ] Unit tests for metadata preservation
-- [ ] Unit tests for automatic rotation
-- [ ] Compilation passes (mvn compile)
-- [ ] Tests pass (mvn test)
+- [ ] Scale4jException base class created
+- [ ] ImageLoadException, ImageProcessException, ImageSaveException created
+- [ ] Scale4jLogger interface created
+- [ ] SLF4J support added (optional)
+- [ ] Existing code updated to use new exceptions
+- [ ] Logging added to key operations
+- [ ] Compilation passes
+- [ ] Tests pass

@@ -15,6 +15,10 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageProcessException;
+import com.scale4j.exception.ImageSaveException;
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.metadata.ExifOrientation;
 import com.scale4j.ops.CropOperation;
@@ -33,7 +37,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +49,8 @@ import java.util.function.UnaryOperator;
  * All methods return the builder for method chaining.
  */
 public final class Scale4jBuilder {
+
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(Scale4jBuilder.class);
 
     private final BufferedImage sourceImage;
     private final List<UnaryOperator<BufferedImage>> operations = new ArrayList<>();
@@ -63,8 +68,10 @@ public final class Scale4jBuilder {
 
     Scale4jBuilder(BufferedImage sourceImage, ExifMetadata metadata, String sourceFormat) {
         if (sourceImage == null) {
-            throw new IllegalArgumentException("Source image cannot be null");
+            throw new ImageProcessException("Source image cannot be null", "constructor");
         }
+        LOGGER.debug("Created Scale4jBuilder with source image ({}x{})", 
+                sourceImage.getWidth(), sourceImage.getHeight());
         this.sourceImage = sourceImage;
         this.metadata = metadata;
         this.sourceFormat = sourceFormat;
@@ -80,6 +87,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder resize(int targetWidth, int targetHeight) {
+        LOGGER.debug("Adding resize operation: {}x{}", targetWidth, targetHeight);
         operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, resizeMode, resizeQuality));
         return this;
     }
@@ -93,6 +101,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder resize(int targetWidth, int targetHeight, ResizeMode mode) {
+        LOGGER.debug("Adding resize operation: {}x{} mode: {}", targetWidth, targetHeight, mode);
         this.resizeMode = mode;
         operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, mode, resizeQuality));
         return this;
@@ -108,6 +117,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder resize(int targetWidth, int targetHeight, ResizeMode mode, ResizeQuality quality) {
+        LOGGER.debug("Adding resize operation: {}x{} mode: {} quality: {}", targetWidth, targetHeight, mode, quality);
         this.resizeMode = mode;
         this.resizeQuality = quality;
         operations.add(image -> ResizeOperation.resize(image, targetWidth, targetHeight, mode, quality));
@@ -121,6 +131,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder scale(double factor) {
+        LOGGER.debug("Adding scale operation: {}x", factor);
         operations.add(image -> {
             int width = (int) (image.getWidth() * factor);
             int height = (int) (image.getHeight() * factor);
@@ -136,6 +147,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder mode(ResizeMode mode) {
+        LOGGER.debug("Setting resize mode: {}", mode);
         this.resizeMode = mode;
         return this;
     }
@@ -147,6 +159,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder quality(ResizeQuality quality) {
+        LOGGER.debug("Setting resize quality: {}", quality);
         this.resizeQuality = quality;
         return this;
     }
@@ -163,6 +176,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder crop(int x, int y, int width, int height) {
+        LOGGER.debug("Adding crop operation: x={} y={} width={} height={}", x, y, width, height);
         operations.add(image -> CropOperation.crop(image, x, y, width, height));
         return this;
     }
@@ -186,6 +200,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder rotate(double degrees) {
+        LOGGER.debug("Adding rotate operation: {} degrees", degrees);
         operations.add(image -> RotateOperation.rotate(image, degrees));
         return this;
     }
@@ -198,6 +213,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder rotate(double degrees, Color backgroundColor) {
+        LOGGER.debug("Adding rotate operation: {} degrees with background color", degrees);
         operations.add(image -> RotateOperation.rotate(image, degrees, backgroundColor));
         return this;
     }
@@ -249,6 +265,8 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder pad(int top, int right, int bottom, int left, Color color) {
+        LOGGER.debug("Adding pad operation: top={} right={} bottom={} left={} color={}", 
+                top, right, bottom, left, color);
         operations.add(image -> PadOperation.pad(image, top, right, bottom, left, color));
         return this;
     }
@@ -288,6 +306,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder watermark(Watermark watermark) {
+        LOGGER.debug("Adding watermark operation");
         operations.add(image -> {
             watermark.apply(image);
             return image;
@@ -319,10 +338,12 @@ public final class Scale4jBuilder {
      * @return the processed BufferedImage
      */
     public BufferedImage build() {
+        LOGGER.debug("Building image with {} operations", operations.size());
         BufferedImage result = sourceImage;
         for (UnaryOperator<BufferedImage> operation : operations) {
             result = operation.apply(result);
         }
+        LOGGER.info("Built image: {}x{}", result.getWidth(), result.getHeight());
         return result;
     }
 
@@ -332,6 +353,7 @@ public final class Scale4jBuilder {
      * @return the processed ImageWithMetadata
      */
     public ImageWithMetadata buildWithMetadata() {
+        LOGGER.debug("Building image with metadata");
         BufferedImage result = build();
         return new ImageWithMetadata(result, metadata, sourceFormat);
     }
@@ -362,6 +384,7 @@ public final class Scale4jBuilder {
      * @return this builder
      */
     public Scale4jBuilder autoRotate() {
+        LOGGER.debug("Adding auto-rotate operation based on EXIF orientation");
         if (metadata != null) {
             operations.add(image -> {
                 ExifMetadata rotatedMeta = new ExifMetadata(ExifOrientation.TOP_LEFT);
@@ -378,9 +401,9 @@ public final class Scale4jBuilder {
      * Saves the processed image to a file.
      *
      * @param output the output file
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFile(File output) throws IOException {
+    public void toFile(File output) throws ImageSaveException {
         toFile(output.toPath());
     }
 
@@ -388,12 +411,18 @@ public final class Scale4jBuilder {
      * Saves the processed image to a file path.
      *
      * @param path the output path
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFile(Path path) throws IOException {
+    public void toFile(Path path) throws ImageSaveException {
+        LOGGER.debug("Saving image to file: {}", path);
         String format = getFormatFromPath(path);
         try (OutputStream os = Files.newOutputStream(path)) {
             toOutputStream(os, format);
+        } catch (ImageSaveException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ImageSaveException("Failed to save image to file: " + path, path.toString(), 
+                    getFormatFromPath(path), e);
         }
     }
 
@@ -402,11 +431,17 @@ public final class Scale4jBuilder {
      *
      * @param path the output path
      * @param format the image format (e.g., "png", "jpg")
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFile(Path path, String format) throws IOException {
+    public void toFile(Path path, String format) throws ImageSaveException {
+        LOGGER.debug("Saving image to file: {} with format: {}", path, format);
         try (OutputStream os = Files.newOutputStream(path)) {
             toOutputStream(os, format);
+        } catch (ImageSaveException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ImageSaveException("Failed to save image to file: " + path, path.toString(), 
+                    format, e);
         }
     }
 
@@ -415,9 +450,10 @@ public final class Scale4jBuilder {
      * This method writes the EXIF metadata to the output file.
      *
      * @param output the output file
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFileWithMetadata(File output) throws IOException {
+    public void toFileWithMetadata(File output) throws ImageSaveException {
+        LOGGER.debug("Saving image with metadata to file: {}", output);
         ImageWithMetadata result = buildWithMetadata();
         ImageSaver.writeWithMetadata(result, output);
     }
@@ -427,9 +463,10 @@ public final class Scale4jBuilder {
      * This method writes the EXIF metadata to the output file.
      *
      * @param path the output path
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFileWithMetadata(Path path) throws IOException {
+    public void toFileWithMetadata(Path path) throws ImageSaveException {
+        LOGGER.debug("Saving image with metadata to file: {}", path);
         ImageWithMetadata result = buildWithMetadata();
         ImageSaver.writeWithMetadata(result, path);
     }
@@ -440,9 +477,10 @@ public final class Scale4jBuilder {
      *
      * @param path the output path
      * @param format the image format (e.g., "png", "jpg")
-     * @throws IOException if the file cannot be written
+     * @throws ImageSaveException if the file cannot be written
      */
-    public void toFileWithMetadata(Path path, String format) throws IOException {
+    public void toFileWithMetadata(Path path, String format) throws ImageSaveException {
+        LOGGER.debug("Saving image with metadata to file: {} with format: {}", path, format);
         ImageWithMetadata result = buildWithMetadata();
         ImageSaver.writeWithMetadata(result, format, path.toFile());
     }
@@ -452,16 +490,17 @@ public final class Scale4jBuilder {
      *
      * @param output the output stream
      * @param format the image format
-     * @throws IOException if the image cannot be written
+     * @throws ImageSaveException if the image cannot be written
      */
-    public void toOutputStream(OutputStream output, String format) throws IOException {
+    public void toOutputStream(OutputStream output, String format) throws ImageSaveException {
+        LOGGER.debug("Writing image to output stream with format: {}", format);
         BufferedImage result = build();
         String imageFormat = format != null ? format.toLowerCase() : getFormatFromPath(Path.of("output." + format));
         if (!ImageSaver.isWritableFormat(imageFormat)) {
             imageFormat = "png";
         }
         if (!ImageSaver.write(result, imageFormat, output)) {
-            throw new IOException("Failed to write image in format: " + imageFormat);
+            throw new ImageSaveException("Failed to write image in format: " + imageFormat, null, imageFormat);
         }
     }
 
@@ -470,9 +509,10 @@ public final class Scale4jBuilder {
      *
      * @param output the output stream
      * @param format the image format
-     * @throws IOException if the image cannot be written
+     * @throws ImageSaveException if the image cannot be written
      */
-    public void toOutputStreamWithMetadata(OutputStream output, String format) throws IOException {
+    public void toOutputStreamWithMetadata(OutputStream output, String format) throws ImageSaveException {
+        LOGGER.debug("Writing image with metadata to output stream with format: {}", format);
         ImageWithMetadata result = buildWithMetadata();
         ImageSaver.writeWithMetadata(result, format, output);
     }
@@ -482,13 +522,13 @@ public final class Scale4jBuilder {
      *
      * @param format the image format
      * @return the image bytes
-     * @throws IOException if the image cannot be written
+     * @throws ImageSaveException if the image cannot be written
      */
-    public byte[] toByteArray(String format) throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            toOutputStream(baos, format);
-            return baos.toByteArray();
-        }
+    public byte[] toByteArray(String format) throws ImageSaveException {
+        LOGGER.debug("Converting image to byte array with format: {}", format);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        toOutputStream(baos, format);
+        return baos.toByteArray();
     }
 
     /**
@@ -496,13 +536,13 @@ public final class Scale4jBuilder {
      *
      * @param format the image format
      * @return the image bytes
-     * @throws IOException if the image cannot be written
+     * @throws ImageSaveException if the image cannot be written
      */
-    public byte[] toByteArrayWithMetadata(String format) throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            toOutputStreamWithMetadata(baos, format);
-            return baos.toByteArray();
-        }
+    public byte[] toByteArrayWithMetadata(String format) throws ImageSaveException {
+        LOGGER.debug("Converting image with metadata to byte array with format: {}", format);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        toOutputStreamWithMetadata(baos, format);
+        return baos.toByteArray();
     }
 
     private static String getFormatFromPath(Path path) {

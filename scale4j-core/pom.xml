@@ -17,6 +17,13 @@
     <description>Core image processing library</description>
 
     <dependencies>
+        <!-- SLF4J API - optional, will use no-op logger if not present -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+            <optional>true</optional>
+        </dependency>
         <!-- TwelveMonkeys ImageIO for extended format support (optional) -->
         <!-- Using standard javax.imageio for metadata - no external dependency needed -->
     </dependencies>

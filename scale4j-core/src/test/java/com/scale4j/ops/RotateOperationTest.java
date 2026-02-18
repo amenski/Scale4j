@@ -28,7 +28,7 @@ class RotateOperationTest {
     @Test
     void rotate_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> RotateOperation.rotate(null, 45.0))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Source image cannot be null");
     }
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.scale4j;
+import com.scale4j.exception.ImageProcessException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -53,7 +54,7 @@ class ImageLoaderTest {
     @Test
     void load_file_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((File) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("File cannot be null");
     }
 
@@ -106,7 +107,7 @@ class ImageLoaderTest {
     @Test
     void load_inputStream_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((InputStream) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("InputStream cannot be null");
     }
 
@@ -121,7 +122,7 @@ class ImageLoaderTest {
     @Test
     void load_url_null_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ImageLoader.load((URL) null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("URL cannot be null");
     }
 
