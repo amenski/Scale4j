@@ -16,6 +16,7 @@
 package com.scale4j;
 
 import com.scale4j.metadata.ExifMetadata;
+import com.scale4j.util.ImageFormatUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -30,11 +31,15 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for loading images from various sources.
  */
 final class ImageLoader {
+
+    private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
 
     private ImageLoader() {
         // Utility class
@@ -227,34 +232,21 @@ final class ImageLoader {
                     IIOMetadata imageMetadata = reader.getImageMetadata(0);
                     ExifMetadata exif = new ExifMetadata();
                     exif.setOrientation(exif.readOrientationFromMetadata(imageMetadata));
-                    // Note: We're storing just the orientation, not the full metadata
-                    // to avoid issues with metadata serialization
                     return exif;
                 } finally {
                     reader.dispose();
                 }
             }
         } catch (Exception e) {
-            // Silently return null if metadata cannot be read
+            LOGGER.log(Level.WARNING, "Failed to read EXIF metadata from file: " + file.getName(), e);
         }
         return null;
     }
 
     private static String getFormatFromFile(File file) {
-        String name = file.getName().toLowerCase();
-        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) {
-            return "jpg";
-        } else if (name.endsWith(".png")) {
-            return "png";
-        } else if (name.endsWith(".gif")) {
-            return "gif";
-        } else if (name.endsWith(".bmp")) {
-            return "bmp";
-        } else if (name.endsWith(".webp")) {
-            return "webp";
-        } else if (name.endsWith(".tiff") || name.endsWith(".tif")) {
-            return "tiff";
+        if (file == null) {
+            return null;
         }
-        return null;
+        return ImageFormatUtils.getFormatFromFile(file);
     }
 }

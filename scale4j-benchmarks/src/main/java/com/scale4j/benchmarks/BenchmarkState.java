@@ -6,6 +6,7 @@ import org.openjdk.jmh.annotations.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,13 +33,9 @@ public class BenchmarkState {
         int width = Integer.parseInt(parts[0]);
         int height = Integer.parseInt(parts[1]);
 
-        sourceImage = createTestImage(width, height);
+        sourceImage = TestImageFactory.createComplexTestImage(width, height);
 
-        try {
-            virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
-        } catch (Exception e) {
-            virtualThreadExecutor = Executors.newCachedThreadPool();
-        }
+        virtualThreadExecutor = Executors.newCachedThreadPool();
     }
 
     @TearDown
@@ -48,26 +45,5 @@ public class BenchmarkState {
         }
     }
 
-    private BufferedImage createTestImage(int width, int height) {
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
 
-        g2d.setColor(new Color(100, 150, 200));
-        g2d.fillRect(0, 0, width, height);
-
-        g2d.setColor(Color.WHITE);
-        for (int i = 0; i < 20; i++) {
-            int x = (int) (Math.random() * width);
-            int y = (int) (Math.random() * height);
-            int size = 20 + (int) (Math.random() * 80);
-            g2d.fillOval(x, y, size, size);
-        }
-
-        g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Arial", Font.BOLD, 24));
-        g2d.drawString("Test Image", width / 4, height / 2);
-
-        g2d.dispose();
-        return image;
-    }
 }

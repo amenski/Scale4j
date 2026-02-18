@@ -1,0 +1,67 @@
+Scale4j - Modern Image Processing Library
+Copyright 2025 Scale4j Contributors
+
+This product includes software developed at Scale4j (https://github.com/scale4j/scale4j).
+
+===============================================================================
+Third-Party Dependencies
+===============================================================================
+
+This software includes the following third-party libraries:
+
+1. TwelveMonkeys ImageIO
+   - Copyright (c) 2008-2024, Harald Kuhr
+   - License: BSD 3-Clause License
+   - https://github.com/haraldk/TwelveMonkeys
+
+2. libwebp
+   - Copyright (c) 2010, Google Inc.
+   - License: BSD 3-Clause License
+   - https://developers.google.com/speed/webp/
+
+3. JUnit Jupiter
+   - Copyright (c) 2015-2024 JUnit Team
+   - License: Eclipse Public License 2.0
+   - https://junit.org/junit5/
+
+4. AssertJ
+   - Copyright (c) 2011-2024 AssertJ Authors
+   - License: Apache License 2.0
+   - https://assertj.github.io/doc/
+
+5. Mockito
+   - Copyright (c) 2007-2024 Mockito contributors
+   - License: MIT License
+   - https://site.mockito.org/
+
+6. JMH (Java Microbenchmark Harness)
+   - Copyright (c) 2014-2024 Oracle and/or its affiliates
+   - License: GPLv2 + Classpath Exception
+   - https://openjdk.java.net/projects/code-tools/jmh/
+
+7. Apache Maven Plugins
+   - Copyright (c) 2000-2024 The Apache Software Foundation
+   - License: Apache License 2.0
+   - https://maven.apache.org/
+
+===============================================================================
+License Texts
+===============================================================================
+
+For full license texts, please see the LICENSE file included with this
+distribution or visit the respective project websites.
+
+===============================================================================
+Disclaimer
+===============================================================================
+
+This software is provided "as is" and any expressed or implied warranties,
+including, but not limited to, the implied warranties of merchantability and
+fitness for a particular purpose are disclaimed. In no event shall the
+copyright holders or contributors be liable for any direct, indirect,
+incidental, special, exemplary, or consequential damages (including, but not
+limited to, procurement of substitute goods or services; loss of use, data,
+or profits; or business interruption) however caused and on any theory of
+liability, whether in contract, strict liability, or tort (including
+negligence or otherwise) arising in any way out of the use of this software,
+even if advised of the possibility of such damage.

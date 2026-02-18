@@ -15,7 +15,7 @@
  */
 package com.scale4j;
 
-import com.scale4j.metadata.ExifMetadata;
+
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 

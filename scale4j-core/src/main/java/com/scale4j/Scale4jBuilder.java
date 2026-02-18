@@ -358,18 +358,18 @@ public final class Scale4jBuilder {
      * Applies automatic rotation based on EXIF orientation metadata.
      * This will rotate/flip the image according to the orientation tag
      * and reset the orientation to normal (TOP_LEFT).
+     * All other metadata (camera settings, geotags, etc.) is preserved.
      *
      * @return this builder
      */
     public Scale4jBuilder autoRotate() {
         if (metadata != null) {
+            final ExifMetadata finalMetadata = metadata;
             operations.add(image -> {
-                ExifMetadata rotatedMeta = new ExifMetadata(ExifOrientation.TOP_LEFT);
-                ImageWithMetadata iwm = new ImageWithMetadata(image, metadata, sourceFormat);
+                ImageWithMetadata iwm = new ImageWithMetadata(image, finalMetadata, sourceFormat);
                 return iwm.withAutoRotation().getImage();
             });
-            // Reset metadata to TOP_LEFT after auto-rotation
-            metadata = new ExifMetadata(ExifOrientation.TOP_LEFT);
+            metadata = metadata.withOrientation(ExifOrientation.TOP_LEFT);
         }
         return this;
     }
@@ -391,7 +391,7 @@ public final class Scale4jBuilder {
      * @throws IOException if the file cannot be written
      */
     public void toFile(Path path) throws IOException {
-        String format = getFormatFromPath(path);
+        String format = ImageSaver.getFormatFromPath(path);
         try (OutputStream os = Files.newOutputStream(path)) {
             toOutputStream(os, format);
         }
@@ -456,7 +456,7 @@ public final class Scale4jBuilder {
      */
     public void toOutputStream(OutputStream output, String format) throws IOException {
         BufferedImage result = build();
-        String imageFormat = format != null ? format.toLowerCase() : getFormatFromPath(Path.of("output." + format));
+        String imageFormat = format != null ? format.toLowerCase() : "png";
         if (!ImageSaver.isWritableFormat(imageFormat)) {
             imageFormat = "png";
         }
@@ -505,12 +505,5 @@ public final class Scale4jBuilder {
         }
     }
 
-    private static String getFormatFromPath(Path path) {
-        String pathStr = path.toString();
-        int lastDot = pathStr.lastIndexOf('.');
-        if (lastDot > 0) {
-            return pathStr.substring(lastDot + 1).toLowerCase();
-        }
-        return "png";
-    }
+
 }
