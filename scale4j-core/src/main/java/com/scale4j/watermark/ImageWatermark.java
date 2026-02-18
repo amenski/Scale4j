@@ -15,8 +15,6 @@
  */
 package com.scale4j.watermark;
 
-import com.scale4j.exception.ImageProcessException;
-import com.scale4j.util.ImageTypeUtils;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
@@ -51,10 +49,10 @@ public final class ImageWatermark implements Watermark {
     @Override
     public void apply(BufferedImage target) {
         if (target == null) {
-            throw new ImageProcessException("Target image cannot be null", "apply");
+            throw new IllegalArgumentException("Target image cannot be null");
         }
         if (image == null) {
-            throw new ImageProcessException("Watermark image cannot be null", "apply");
+            throw new IllegalArgumentException("Watermark image cannot be null");
         }
 
         // Calculate scaled dimensions
@@ -67,8 +65,10 @@ public final class ImageWatermark implements Watermark {
         g2d.drawImage(image, 0, 0, watermarkWidth, watermarkHeight, null);
         g2d.dispose();
 
-        // Calculate position
-        int[] coords = position.calculate(target.getWidth(), target.getHeight(), watermarkWidth, watermarkHeight);
+        // Calculate position using ImageWatermarkPositionCalculator (margin = 0)
+        ImageWatermarkPositionCalculator calculator = ImageWatermarkPositionCalculator.getInstance();
+        int[] coords = calculator.calculate(
+            target.getWidth(), target.getHeight(), watermarkWidth, watermarkHeight, position, 0);
         int x = coords[0];
         int y = coords[1];
 
@@ -112,7 +112,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder image(BufferedImage image) {
             if (image == null) {
-                throw new ImageProcessException("Watermark image cannot be null", "image");
+                throw new IllegalArgumentException("Watermark image cannot be null");
             }
             this.image = image;
             return this;
@@ -120,7 +120,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder position(WatermarkPosition position) {
             if (position == null) {
-                throw new ImageProcessException("Position cannot be null", "position");
+                throw new IllegalArgumentException("Position cannot be null");
             }
             this.position = position;
             return this;
@@ -128,7 +128,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder opacity(float opacity) {
             if (opacity < 0.0f || opacity > 1.0f) {
-                throw new ImageProcessException("Opacity must be between 0.0 and 1.0", "opacity");
+                throw new IllegalArgumentException("Opacity must be between 0.0 and 1.0");
             }
             this.opacity = opacity;
             return this;
@@ -136,7 +136,7 @@ public final class ImageWatermark implements Watermark {
 
         public Builder scale(float scale) {
             if (scale <= 0.0f || scale > 1.0f) {
-                throw new ImageProcessException("Scale must be between 0.0 and 1.0", "scale");
+                throw new IllegalArgumentException("Scale must be between 0.0 and 1.0");
             }
             this.scale = scale;
             return this;
@@ -144,7 +144,7 @@ public final class ImageWatermark implements Watermark {
 
         public ImageWatermark build() {
             if (image == null) {
-                throw new ImageProcessException("Watermark image must be set", "build");
+                throw new IllegalArgumentException("Watermark image must be set");
             }
             return new ImageWatermark(this);
         }

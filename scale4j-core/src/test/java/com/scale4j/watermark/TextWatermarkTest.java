@@ -15,19 +15,19 @@
  */
 package com.scale4j.watermark;
 
-import com.scale4j.exception.ImageProcessException;
+
 import org.junit.jupiter.api.Test;
-import com.scale4j.exception.ImageProcessException;
+
 
 import java.awt.*;
-import com.scale4j.exception.ImageProcessException;
+
 import java.awt.image.BufferedImage;
-import com.scale4j.exception.ImageProcessException;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
-import com.scale4j.exception.ImageProcessException;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import com.scale4j.exception.ImageProcessException;
+
 
 /**
  * Unit tests for TextWatermark.
@@ -81,52 +81,52 @@ class TextWatermarkTest {
     @Test
     void builder_nullText_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().text(null))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Text cannot be null or empty");
     }
 
     @Test
     void builder_emptyText_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().text(""))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Text cannot be null or empty");
     }
 
     @Test
     void builder_nullFont_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().font(null))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Font cannot be null");
     }
 
     @Test
     void builder_nullColor_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().color(null))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Color cannot be null");
     }
 
     @Test
     void builder_nullPosition_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().position(null))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Position cannot be null");
     }
 
     @Test
     void builder_opacityOutOfRange_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().opacity(-0.1f))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Opacity must be between 0.0 and 1.0");
         assertThatThrownBy(() -> TextWatermark.builder().opacity(1.1f))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Opacity must be between 0.0 and 1.0");
     }
 
     @Test
     void builder_negativeMargin_throwsException() {
         assertThatThrownBy(() -> TextWatermark.builder().margin(-1))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Margin must be non-negative");
     }
 
@@ -134,7 +134,7 @@ class TextWatermarkTest {
     void apply_nullTarget_throwsException() {
         TextWatermark watermark = TextWatermark.of("Test");
         assertThatThrownBy(() -> watermark.apply(null))
-                .isInstanceOf(ImageProcessException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Target image cannot be null");
     }
 
