@@ -15,30 +15,16 @@
  */
 package com.scale4j;
 
-import com.scale4j.ops.CropOperation;
-import com.scale4j.ops.PadOperation;
-import com.scale4j.ops.ResizeOperation;
-import com.scale4j.ops.RotateOperation;
-import com.scale4j.types.ResizeMode;
-import com.scale4j.types.ResizeQuality;
-import com.scale4j.watermark.ImageWatermark;
-import com.scale4j.watermark.TextWatermark;
-import com.scale4j.watermark.Watermark;
-import com.scale4j.watermark.WatermarkPosition;
-
-import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Batch processor for applying image processing operations to multiple images.
@@ -95,6 +81,8 @@ public final class BatchProcessor {
 
         if (executor != null) {
             return executeWithExecutor();
+        } else if (parallelism > 1) {
+            return executeWithParallelism();
         } else {
             return executeSequentially();
         }
@@ -110,24 +98,14 @@ public final class BatchProcessor {
             return Collections.emptyList();
         }
 
-        List<CompletableFuture<BufferedImage>> futures = new ArrayList<>(images.size());
         ExecutorService exec = executor != null ? executor : createDefaultExecutor();
 
-        for (BufferedImage image : images) {
-            CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
-                    () -> processImage(image),
-                    exec
-            );
-            futures.add(future);
-        }
+        List<CompletableFuture<BufferedImage>> futures = images.stream()
+                .map(image -> CompletableFuture.supplyAsync(() -> processImage(image), exec))
+                .collect(Collectors.toList());
 
         if (preserveOrder) {
-            // Wait for all futures to complete in order
-            List<BufferedImage> results = new ArrayList<>(images.size());
-            for (CompletableFuture<BufferedImage> future : futures) {
-                results.add(future.join());
-            }
-            return futures; // Return the futures list for compatibility
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         }
 
         return futures;
@@ -141,19 +119,19 @@ public final class BatchProcessor {
      */
     public CompletableFuture<List<BufferedImage>> executeAndJoin() {
         ExecutorService exec = executor != null ? executor : createDefaultExecutor();
-        return CompletableFuture.supplyAsync(() -> {
-            List<CompletableFuture<BufferedImage>> futures = new ArrayList<>(images.size());
-            for (BufferedImage image : images) {
-                CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
-                        () -> processImage(image),
-                        exec
-                );
-                futures.add(future);
-            }
-            return futures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(java.util.stream.Collectors.toList());
-        }, exec).whenComplete((result, ex) -> {
+
+        List<CompletableFuture<BufferedImage>> futures = images.stream()
+                .map(image -> CompletableFuture.supplyAsync(() -> processImage(image), exec))
+                .collect(Collectors.toList());
+
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0]));
+
+        return allFutures.thenApply(v ->
+                futures.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList())
+        ).whenComplete((result, ex) -> {
             if (executor == null) {
                 exec.shutdown();
             }
@@ -161,27 +139,20 @@ public final class BatchProcessor {
     }
 
     private List<BufferedImage> executeWithExecutor() {
-        List<CompletableFuture<BufferedImage>> futures = new ArrayList<>(images.size());
+        List<CompletableFuture<BufferedImage>> futures = images.stream()
+                .map(image -> CompletableFuture.supplyAsync(() -> processImage(image), executor))
+                .collect(Collectors.toList());
 
-        for (BufferedImage image : images) {
-            CompletableFuture<BufferedImage> future = CompletableFuture.supplyAsync(
-                    () -> processImage(image),
-                    executor
-            );
-            futures.add(future);
-        }
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                futures.toArray(new CompletableFuture[0]));
 
         if (preserveOrder) {
-            List<BufferedImage> results = new ArrayList<>(images.size());
-            for (CompletableFuture<BufferedImage> future : futures) {
-                results.add(future.join());
-            }
-            return results;
-        } else {
-            return futures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(java.util.stream.Collectors.toList());
+            allFutures.join();
         }
+
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 
     private List<BufferedImage> executeSequentially() {
@@ -190,6 +161,28 @@ public final class BatchProcessor {
             results.add(processImage(image));
         }
         return results;
+    }
+
+    private List<BufferedImage> executeWithParallelism() {
+        ExecutorService exec = Executors.newFixedThreadPool(parallelism);
+        try {
+            List<CompletableFuture<BufferedImage>> futures = images.stream()
+                    .map(image -> CompletableFuture.supplyAsync(() -> processImage(image), exec))
+                    .collect(Collectors.toList());
+
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                    futures.toArray(new CompletableFuture[0]));
+
+            if (preserveOrder) {
+                allFutures.join();
+            }
+
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList());
+        } finally {
+            exec.shutdown();
+        }
     }
 
     private BufferedImage processImage(BufferedImage image) {

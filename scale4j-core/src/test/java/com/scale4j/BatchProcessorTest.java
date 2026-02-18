@@ -371,4 +371,39 @@ class BatchProcessorTest {
 
         assertThat(processor.isPreserveOrder()).isTrue();
     }
+
+    @Test
+    void batch_parallelExecution_usesMultipleThreads() {
+        List<BufferedImage> images = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            images.add(new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB));
+        }
+
+        List<Long> threadIds = new ArrayList<>();
+
+        BatchProcessor processor = Scale4j.batch()
+                .images(images)
+                .parallel(4)
+                .build();
+
+        processor.execute();
+
+        assertThat(processor.getParallelism()).isEqualTo(4);
+    }
+
+    @Test
+    void batch_executorShutdown_whenNoCustomExecutor() throws Exception {
+        List<BufferedImage> images = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            images.add(new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB));
+        }
+
+        CompletableFuture<List<BufferedImage>> future = Scale4j.batch()
+                .images(images)
+                .parallel(2)
+                .executeAndJoin();
+
+        List<BufferedImage> results = future.get();
+        assertThat(results).hasSize(2);
+    }
 }

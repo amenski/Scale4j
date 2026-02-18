@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.scale4j.filter;
+package com.scale4j.ops;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
 import java.awt.image.ConvolveOp;
@@ -28,6 +27,36 @@ import java.awt.image.RescaleOp;
  * Filters are based on ConvolveOp, LookupOp, and RescaleOp.
  */
 public final class FilterOperation {
+
+    private static final float[] SHARPEN_KERNEL_BASIC = {
+        0f, -1f, 0f,
+        -1f, 5f, -1f,
+        0f, -1f, 0f
+    };
+
+    private static final float SHARPEN_STRENGTH_MULTIPLIER = 4f;
+    private static final float SHARPEN_CENTER_BASE = 1f;
+
+    private static final float LUMA_RED = 0.299f;
+    private static final float LUMA_GREEN = 0.587f;
+    private static final float LUMA_BLUE = 0.114f;
+
+    private static final float SEPIA_DEPTH_RED = 1.1f;
+    private static final float SEPIA_DEPTH_GREEN = 0.9f;
+    private static final float SEPIA_DEPTH_BLUE = 0.7f;
+
+    private static final float SEPIA_RED_R = 0.393f;
+    private static final float SEPIA_RED_G = 0.769f;
+    private static final float SEPIA_RED_B = 0.189f;
+    private static final float SEPIA_GREEN_R = 0.349f;
+    private static final float SEPIA_GREEN_G = 0.686f;
+    private static final float SEPIA_GREEN_B = 0.168f;
+    private static final float SEPIA_BLUE_R = 0.272f;
+    private static final float SEPIA_BLUE_G = 0.534f;
+    private static final float SEPIA_BLUE_B = 0.131f;
+
+    private static final int KERNEL_SIZE_3X3 = 3;
+    private static final int LOOKUP_TABLE_SIZE = 256;
 
     private FilterOperation() {
         // Utility class
@@ -82,7 +111,6 @@ public final class FilterOperation {
             }
         }
 
-        // Normalize
         for (int i = 0; i < kernel.length; i++) {
             kernel[i] /= sum;
         }
@@ -103,13 +131,7 @@ public final class FilterOperation {
             throw new IllegalArgumentException("Source image cannot be null");
         }
 
-        // Sharpen kernel
-        float[] sharpenKernel = {
-            0f, -1f, 0f,
-            -1f, 5f, -1f,
-            0f, -1f, 0f
-        };
-        Kernel kernel = new Kernel(3, 3, sharpenKernel);
+        Kernel kernel = new Kernel(KERNEL_SIZE_3X3, KERNEL_SIZE_3X3, SHARPEN_KERNEL_BASIC);
         ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         return op.filter(source, null);
     }
@@ -129,7 +151,7 @@ public final class FilterOperation {
             throw new IllegalArgumentException("Strength cannot be negative");
         }
 
-        float center = 1f + 4f * strength;
+        float center = SHARPEN_CENTER_BASE + SHARPEN_STRENGTH_MULTIPLIER * strength;
         float edge = -strength;
 
         float[] sharpenKernel = {
@@ -137,7 +159,7 @@ public final class FilterOperation {
             edge, center, edge,
             edge, edge, edge
         };
-        Kernel kernel = new Kernel(3, 3, sharpenKernel);
+        Kernel kernel = new Kernel(KERNEL_SIZE_3X3, KERNEL_SIZE_3X3, sharpenKernel);
         ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         return op.filter(source, null);
     }
@@ -158,25 +180,28 @@ public final class FilterOperation {
         int width = source.getWidth();
         int height = source.getHeight();
         
-        // Create output image with same type
-        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        boolean hasAlpha = source.getColorModel().hasAlpha();
+        int imageType = hasAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         
-        // Apply grayscale conversion pixel by pixel
+        BufferedImage result = new BufferedImage(width, height, imageType);
+        
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int rgb = source.getRGB(x, y);
                 
-                // Extract RGB components (ignoring alpha for RGB images)
+                int a = (rgb >> 24) & 0xFF;
                 int r = (rgb >> 16) & 0xFF;
                 int g = (rgb >> 8) & 0xFF;
                 int b = rgb & 0xFF;
                 
-                // Apply ITU-R BT.601 luma coefficients
-                int gray = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+                int gray = (int) (LUMA_RED * r + LUMA_GREEN * g + LUMA_BLUE * b);
                 gray = Math.min(255, Math.max(0, gray));
                 
-                // Set grayscale pixel (R = G = B = gray)
-                result.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
+                if (hasAlpha) {
+                    result.setRGB(x, y, (a << 24) | (gray << 16) | (gray << 8) | gray);
+                } else {
+                    result.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
+                }
             }
         }
         
@@ -234,7 +259,6 @@ public final class FilterOperation {
             throw new IllegalArgumentException("Source image cannot be null");
         }
 
-        // Scale and offset for contrast
         float offset = (1f - contrast) * 128f;
         RescaleOp op = new RescaleOp(contrast, offset, null);
         return op.filter(source, null);
@@ -253,20 +277,18 @@ public final class FilterOperation {
             throw new IllegalArgumentException("Source image cannot be null");
         }
 
-        // Sepia transformation matrix
-        byte[] sepiaR = new byte[256];
-        byte[] sepiaG = new byte[256];
-        byte[] sepiaB = new byte[256];
+        byte[] sepiaR = new byte[LOOKUP_TABLE_SIZE];
+        byte[] sepiaG = new byte[LOOKUP_TABLE_SIZE];
+        byte[] sepiaB = new byte[LOOKUP_TABLE_SIZE];
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < LOOKUP_TABLE_SIZE; i++) {
             double r = i;
             double g = i;
             double b = i;
 
-            // Sepia transformation
-            int tr = (int) (0.393 * r + 0.769 * g + 0.189 * b);
-            int tg = (int) (0.349 * r + 0.686 * g + 0.168 * b);
-            int tb = (int) (0.272 * r + 0.534 * g + 0.131 * b);
+            int tr = (int) (SEPIA_RED_R * r + SEPIA_RED_G * g + SEPIA_RED_B * b);
+            int tg = (int) (SEPIA_GREEN_R * r + SEPIA_GREEN_G * g + SEPIA_GREEN_B * b);
+            int tb = (int) (SEPIA_BLUE_R * r + SEPIA_BLUE_G * g + SEPIA_BLUE_B * b);
 
             sepiaR[i] = (byte) Math.min(255, tr);
             sepiaG[i] = (byte) Math.min(255, tg);
@@ -300,19 +322,18 @@ public final class FilterOperation {
             return sepia(source);
         }
 
-        // Interpolate between original and sepia
-        byte[] sepiaR = new byte[256];
-        byte[] sepiaG = new byte[256];
-        byte[] sepiaB = new byte[256];
+        byte[] sepiaR = new byte[LOOKUP_TABLE_SIZE];
+        byte[] sepiaG = new byte[LOOKUP_TABLE_SIZE];
+        byte[] sepiaB = new byte[LOOKUP_TABLE_SIZE];
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < LOOKUP_TABLE_SIZE; i++) {
             double r = i;
             double g = i;
             double b = i;
 
-            int tr = (int) (0.393 * r + 0.769 * g + 0.189 * b);
-            int tg = (int) (0.349 * r + 0.686 * g + 0.168 * b);
-            int tb = (int) (0.272 * r + 0.534 * g + 0.131 * b);
+            int tr = (int) (SEPIA_RED_R * r + SEPIA_RED_G * g + SEPIA_RED_B * b);
+            int tg = (int) (SEPIA_GREEN_R * r + SEPIA_GREEN_G * g + SEPIA_GREEN_B * b);
+            int tb = (int) (SEPIA_BLUE_R * r + SEPIA_BLUE_G * g + SEPIA_BLUE_B * b);
 
             int sepiaValR = Math.min(255, tr);
             int sepiaValG = Math.min(255, tg);
@@ -341,17 +362,14 @@ public final class FilterOperation {
             throw new IllegalArgumentException("Source image cannot be null");
         }
 
-        // First convert to grayscale for edge detection
         BufferedImage gray = grayscale(source);
 
-        // Sobel horizontal kernel
         float[] sobelH = {
             -1f, 0f, 1f,
             -2f, 0f, 2f,
             -1f, 0f, 1f
         };
 
-        // Sobel vertical kernel
         float[] sobelV = {
             -1f, -2f, -1f,
             0f, 0f, 0f,
@@ -367,7 +385,6 @@ public final class FilterOperation {
         BufferedImage resultH = opH.filter(gray, null);
         BufferedImage resultV = opV.filter(gray, null);
 
-        // Combine the two results
         int width = source.getWidth();
         int height = source.getHeight();
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -418,7 +435,6 @@ public final class FilterOperation {
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
                 float normalizedDistance = distance / maxDistance;
 
-                // Calculate vignette factor (1.0 at center, decreasing towards edges)
                 float factor = 1.0f - (normalizedDistance * intensity);
                 factor = Math.max(0, Math.min(1, factor));
 

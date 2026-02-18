@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.scale4j.filter;
+package com.scale4j.ops;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,24 +127,38 @@ class FilterOperationTest {
     @Test
     void grayscale_shouldConvertToGrayscale() {
         BufferedImage grayImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        // Set a known color (red: 255, 0, 0)
-        grayImage.setRGB(5, 5, 0xFFFF0000); // ARGB format - opaque red
+        grayImage.setRGB(5, 5, 0xFFFF0000);
         
         BufferedImage result = FilterOperation.grayscale(grayImage);
         
-        // Get RGB components (mask out alpha)
         int pixel = result.getRGB(5, 5);
         int r = (pixel >> 16) & 0xFF;
         int g = (pixel >> 8) & 0xFF;
         int b = pixel & 0xFF;
         
-        // Red (255, 0, 0) should convert to ~77 using BT.601 luma
-        // 0.299*255 + 0.587*0 + 0.114*0 = 76.245
-        // All channels should be equal in grayscale
         assertEquals(r, g, "R and G should be equal in grayscale");
         assertEquals(g, b, "G and B should be equal in grayscale");
-        // The value should be approximately 77
         assertTrue(r >= 70 && r <= 85, "Grayscale value should be approximately 77");
+    }
+
+    @Test
+    void grayscale_shouldPreserveAlphaChannel() {
+        BufferedImage alphaImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        alphaImage.setRGB(5, 5, 0x80FF0000);
+        
+        BufferedImage result = FilterOperation.grayscale(alphaImage);
+        
+        assertEquals(BufferedImage.TYPE_INT_ARGB, result.getType(), "Output should preserve ARGB type");
+        
+        int pixel = result.getRGB(5, 5);
+        int alpha = (pixel >> 24) & 0xFF;
+        int r = (pixel >> 16) & 0xFF;
+        int g = (pixel >> 8) & 0xFF;
+        int b = pixel & 0xFF;
+        
+        assertEquals(128, alpha, "Alpha channel should be preserved");
+        assertEquals(r, g, "R and G should be equal in grayscale");
+        assertEquals(g, b, "G and B should be equal in grayscale");
     }
 
     // ==================== Brightness Tests ====================
