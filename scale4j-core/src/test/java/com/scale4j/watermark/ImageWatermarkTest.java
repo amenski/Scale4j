@@ -15,6 +15,7 @@
  */
 package com.scale4j.watermark;
 
+import com.scale4j.exception.ImageProcessException;
 import org.junit.jupiter.api.Test;
 import com.scale4j.exception.ImageProcessException;
 
@@ -63,7 +64,7 @@ class ImageWatermarkTest {
     @Test
     void builder_nullImage_throwsException() {
         assertThatThrownBy(() -> ImageWatermark.builder().image(null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Watermark image cannot be null");
     }
 
@@ -71,7 +72,7 @@ class ImageWatermarkTest {
     void builder_nullPosition_throwsException() {
         BufferedImage img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ImageWatermark.builder().image(img).position(null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Position cannot be null");
     }
 
@@ -79,10 +80,10 @@ class ImageWatermarkTest {
     void builder_opacityOutOfRange_throwsException() {
         BufferedImage img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ImageWatermark.builder().image(img).opacity(-0.1f))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Opacity must be between 0.0 and 1.0");
         assertThatThrownBy(() -> ImageWatermark.builder().image(img).opacity(1.1f))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Opacity must be between 0.0 and 1.0");
     }
 
@@ -90,10 +91,10 @@ class ImageWatermarkTest {
     void builder_scaleOutOfRange_throwsException() {
         BufferedImage img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ImageWatermark.builder().image(img).scale(0.0f))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Scale must be between 0.0 and 1.0");
         assertThatThrownBy(() -> ImageWatermark.builder().image(img).scale(1.1f))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Scale must be between 0.0 and 1.0");
     }
 
@@ -110,7 +111,7 @@ class ImageWatermarkTest {
     @Test
     void builder_missingImage_throwsException() {
         assertThatThrownBy(() -> ImageWatermark.builder().build())
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Watermark image must be set");
     }
 
@@ -119,7 +120,7 @@ class ImageWatermarkTest {
         BufferedImage watermarkImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         ImageWatermark watermark = ImageWatermark.builder().image(watermarkImage).build();
         assertThatThrownBy(() -> watermark.apply(null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Target image cannot be null");
     }
 

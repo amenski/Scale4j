@@ -31,7 +31,7 @@ class CropOperationTest {
     @Test
     void crop_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> CropOperation.crop(null, 0, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Source image cannot be null");
     }
 
@@ -39,7 +39,7 @@ class CropOperationTest {
     void crop_zeroWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 0, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop dimensions must be positive");
     }
 
@@ -47,7 +47,7 @@ class CropOperationTest {
     void crop_zeroHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 10, 0))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop dimensions must be positive");
     }
 
@@ -55,7 +55,7 @@ class CropOperationTest {
     void crop_negativeWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, -10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop dimensions must be positive");
     }
 
@@ -63,7 +63,7 @@ class CropOperationTest {
     void crop_negativeHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 0, 10, -10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop dimensions must be positive");
     }
 
@@ -71,7 +71,7 @@ class CropOperationTest {
     void crop_negativeX_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, -5, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop region exceeds image bounds");
     }
 
@@ -79,7 +79,7 @@ class CropOperationTest {
     void crop_negativeY_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, -5, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop region exceeds image bounds");
     }
 
@@ -88,7 +88,7 @@ class CropOperationTest {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         // x = 95, width = 10 => x+width = 105 > 100
         assertThatThrownBy(() -> CropOperation.crop(source, 95, 0, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop region exceeds image bounds");
     }
 
@@ -96,7 +96,7 @@ class CropOperationTest {
     void crop_regionExceedsHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> CropOperation.crop(source, 0, 95, 10, 10))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Crop region exceeds image bounds");
     }
 

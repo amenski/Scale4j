@@ -1,26 +1,27 @@
 ## Issue
-Operations create many intermediate BufferedImage objects, causing high memory pressure. No pooling or reuse of image buffers.
+Exceptions are generic (IllegalArgumentException, RuntimeException, IOException) with minimal context. No logging facade or configuration hooks.
 
 ## Impact
-High GC overhead, poor performance on large images or batch processing, memory spikes.
+Difficult to diagnose failures in production; cannot integrate with application monitoring.
 
 ## Task
-Introduce a simple image pool (SoftReference-based) for common sizes/color models. Add configurable pooling strategy (none, soft, thread-local). Provide memory usage monitoring hooks.
+Introduce a dedicated exception hierarchy (Scale4jException, ImageLoadException, ImageProcessException, etc.) with detailed messages and optional cause chains. Provide a Scale4jLogger interface (SLF4J optional) for debug/trace output.
 
 ## Implementation Details
-1. Create `ImagePool` interface
-2. Create `SoftReferenceImagePool` implementation
-3. Create `ImagePoolManager` singleton
-4. Update operations to use pool for intermediate images
-5. Add configuration options
-6. Add memory monitoring
+1. Create `com.scale4j.exception` package
+2. Create base `Scale4jException` class
+3. Create specific exceptions: `ImageLoadException`, `ImageProcessException`, `ImageSaveException`
+4. Create `Scale4jLogger` interface
+5. Add SLF4J support (optional dependency)
+6. Update existing code to throw specific exceptions
+7. Add logging calls throughout
 
 ## Verification Checklist
-- [ ] ImagePool interface created
-- [ ] SoftReferenceImagePool implementation
-- [ ] ImagePoolManager singleton
-- [ ] Operations updated to use pool
-- [ ] Configuration options added
-- [ ] Memory monitoring hooks
+- [ ] Scale4jException base class created
+- [ ] ImageLoadException, ImageProcessException, ImageSaveException created
+- [ ] Scale4jLogger interface created
+- [ ] SLF4J support added (optional)
+- [ ] Existing code updated to use new exceptions
+- [ ] Logging added to key operations
 - [ ] Compilation passes
 - [ ] Tests pass

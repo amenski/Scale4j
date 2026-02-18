@@ -15,6 +15,7 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.WatermarkPosition;
@@ -78,7 +79,7 @@ class AsyncScale4jTest {
 
         // Wait for the future to complete
         assertThatThrownBy(future::join)
-                .hasRootCauseInstanceOf(IOException.class)
+                .hasRootCauseInstanceOf(ImageLoadException.class)
                 .hasMessageContaining("Failed to load image");
     }
 

@@ -33,7 +33,7 @@ class PadOperationTest {
     @Test
     void pad_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> PadOperation.pad(null, 10, 10, 10, 10, Color.WHITE))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Source image cannot be null");
     }
 
@@ -62,7 +62,7 @@ class PadOperationTest {
         // Negative padding that results in non-positive dimension should throw IllegalArgumentException
         // top = -100, sourceHeight=50 => newHeight = -50 <= 0
         assertThatThrownBy(() -> PadOperation.pad(source, -100, 0, 0, 0, Color.WHITE))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(ImageProcessException.class);
     }
 
     @Test

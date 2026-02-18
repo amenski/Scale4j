@@ -35,7 +35,7 @@ class ResizeOperationTest {
     @Test
     void resize_nullSource_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> ResizeOperation.resize(null, 100, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Source image cannot be null");
     }
 
@@ -43,7 +43,7 @@ class ResizeOperationTest {
     void resize_negativeTargetWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, -10, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Target dimensions must be positive");
     }
 
@@ -51,7 +51,7 @@ class ResizeOperationTest {
     void resize_negativeTargetHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 100, -10, ResizeMode.EXACT, ResizeQuality.MEDIUM))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Target dimensions must be positive");
     }
 
@@ -59,7 +59,7 @@ class ResizeOperationTest {
     void resize_zeroTargetWidth_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 0, 100, ResizeMode.EXACT, ResizeQuality.MEDIUM))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Target dimensions must be positive");
     }
 
@@ -67,7 +67,7 @@ class ResizeOperationTest {
     void resize_zeroTargetHeight_throwsIllegalArgumentException() {
         BufferedImage source = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         assertThatThrownBy(() -> ResizeOperation.resize(source, 100, 0, ResizeMode.EXACT, ResizeQuality.MEDIUM))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ImageProcessException.class)
                 .hasMessage("Target dimensions must be positive");
     }
 

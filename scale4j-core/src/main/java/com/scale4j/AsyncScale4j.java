@@ -15,6 +15,8 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageLoadException;
+import com.scale4j.exception.ImageSaveException;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
 import com.scale4j.watermark.TextWatermark;
@@ -86,7 +88,7 @@ public final class AsyncScale4j {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return ImageLoader.load(file);
-            } catch (IOException e) {
+            } catch (ImageLoadException e) {
                 throw new RuntimeException("Failed to load image: " + file.getAbsolutePath(), e);
             }
         }, executor);
@@ -144,7 +146,7 @@ public final class AsyncScale4j {
         return CompletableFuture.runAsync(() -> {
             try {
                 ImageSaver.write(image, format, output.toFile());
-            } catch (IOException e) {
+            } catch (ImageSaveException e) {
                 throw new RuntimeException("Failed to save image: " + output, e);
             }
         }, executor);
