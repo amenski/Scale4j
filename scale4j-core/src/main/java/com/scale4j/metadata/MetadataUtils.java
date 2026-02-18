@@ -15,17 +15,18 @@
  */
 package com.scale4j.metadata;
 
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
+
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility methods for working with image metadata.
  */
 public final class MetadataUtils {
     
-    private static final Logger LOGGER = Logger.getLogger(MetadataUtils.class.getName());
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(MetadataUtils.class);
     
     private MetadataUtils() {
         // Utility class
@@ -90,7 +91,7 @@ public final class MetadataUtils {
                 metadata.mergeTree(exifFormat, root);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to merge EXIF orientation into metadata", e);
+            LOGGER.warn( "Failed to merge EXIF orientation into metadata", e);
         }
     }
     

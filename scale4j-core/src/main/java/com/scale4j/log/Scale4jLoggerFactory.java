@@ -15,6 +15,9 @@
  */
 package com.scale4j.log;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Factory for creating Scale4jLogger instances.
  * 
@@ -33,6 +36,8 @@ public final class Scale4jLoggerFactory {
     private static final Scale4jLoggerFactory INSTANCE = new Scale4jLoggerFactory();
     
     private static final boolean SLF4J_AVAILABLE;
+    
+    private final ConcurrentMap<String, Scale4jLogger> loggerCache = new ConcurrentHashMap<>();
     
     static {
         boolean available;
@@ -82,10 +87,12 @@ public final class Scale4jLoggerFactory {
             name = "Scale4j";
         }
         
-        if (SLF4J_AVAILABLE) {
-            return new Slf4jScale4jLogger(name);
-        }
-        return new NoOpScale4jLogger(name);
+        return loggerCache.computeIfAbsent(name, n -> {
+            if (SLF4J_AVAILABLE) {
+                return new Slf4jScale4jLogger(n);
+            }
+            return new NoOpScale4jLogger(n);
+        });
     }
 
     /**

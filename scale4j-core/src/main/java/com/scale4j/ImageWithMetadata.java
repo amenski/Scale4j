@@ -15,6 +15,7 @@
  */
 package com.scale4j;
 
+import com.scale4j.exception.ImageProcessException;
 import com.scale4j.metadata.ExifMetadata;
 import com.scale4j.metadata.ExifOrientation;
 
@@ -58,7 +59,7 @@ public final class ImageWithMetadata {
      */
     public ImageWithMetadata(BufferedImage image, ExifMetadata metadata, String sourceFormat) {
         if (image == null) {
-            throw new IllegalArgumentException("Image cannot be null");
+            throw new ImageProcessException("Image cannot be null", "create ImageWithMetadata");
         }
         this.image = image;
         this.metadata = metadata;

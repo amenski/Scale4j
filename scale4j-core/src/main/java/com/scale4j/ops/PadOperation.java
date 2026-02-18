@@ -18,6 +18,7 @@ package com.scale4j.ops;
 import com.scale4j.exception.ImageProcessException;
 import com.scale4j.log.Scale4jLogger;
 import com.scale4j.log.Scale4jLoggerFactory;
+import com.scale4j.util.ImageTypeUtils;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -64,7 +65,8 @@ public final class PadOperation {
                 sourceWidth, sourceHeight, newWidth, newHeight);
         
         try {
-            BufferedImage padded = new BufferedImage(newWidth, newHeight, source.getType());
+            int imageType = ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+            BufferedImage padded = new BufferedImage(newWidth, newHeight, imageType);
 
             Graphics2D g2d = padded.createGraphics();
 

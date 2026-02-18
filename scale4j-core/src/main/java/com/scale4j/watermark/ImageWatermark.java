@@ -16,6 +16,7 @@
 package com.scale4j.watermark;
 
 import com.scale4j.exception.ImageProcessException;
+import com.scale4j.util.ImageTypeUtils;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;

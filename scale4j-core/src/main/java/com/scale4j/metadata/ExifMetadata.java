@@ -15,7 +15,10 @@
  */
 package com.scale4j.metadata;
 
+import com.scale4j.log.Scale4jLogger;
+import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.util.ImageFormatUtils;
+import com.scale4j.util.ImageTypeUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
@@ -30,8 +33,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ import java.util.Iterator;
 
 public class ExifMetadata {
 
-    private static final Logger LOGGER = Logger.getLogger(ExifMetadata.class.getName());
+    private static final Scale4jLogger LOGGER = Scale4jLoggerFactory.getInstance().getLogger(ExifMetadata.class);
 
     private ExifOrientation orientation;
     private IIOMetadata metadata;
@@ -91,7 +92,7 @@ public class ExifMetadata {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to read EXIF orientation from metadata", e);
+            LOGGER.warn( "Failed to read EXIF orientation from metadata", e);
         }
         return ExifOrientation.TOP_LEFT;
     }
@@ -189,7 +190,7 @@ public class ExifMetadata {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to read EXIF orientation from metadata", e);
+            LOGGER.warn( "Failed to read EXIF orientation from metadata", e);
         }
         return ExifOrientation.TOP_LEFT;
     }

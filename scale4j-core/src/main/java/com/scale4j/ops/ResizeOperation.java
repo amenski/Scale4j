@@ -20,6 +20,7 @@ import com.scale4j.log.Scale4jLogger;
 import com.scale4j.log.Scale4jLoggerFactory;
 import com.scale4j.types.ResizeMode;
 import com.scale4j.types.ResizeQuality;
+import com.scale4j.util.ImageTypeUtils;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -155,8 +156,9 @@ public final class ResizeOperation {
         int targetWidth,
         int targetHeight,
         ResizeQuality quality) {
-        // Use AffineTransformOp for better performance and quality
-        BufferedImage dest = new BufferedImage(targetWidth, targetHeight, source.getType());
+        // Use a safe image type (handle TYPE_CUSTOM edge case)
+        int imageType = ImageTypeUtils.getSafeImageType(source.getType(), source.getColorModel().hasAlpha());
+        BufferedImage dest = new BufferedImage(targetWidth, targetHeight, imageType);
         AffineTransform at = AffineTransform.getScaleInstance(
             (double) targetWidth / source.getWidth(),
             (double) targetHeight / source.getHeight()
