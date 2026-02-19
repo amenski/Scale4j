@@ -2,7 +2,7 @@
 
 ## Description
 
-Scale4j is a modern image scaling and processing library for Java, designed as a high‑performance, maintainable solution for common image manipulation tasks. It provides a fluent, intuitive API for resize, crop, rotate, pad, and watermark operations, with zero external dependencies and built‑in support for asynchronous processing using Java's `CompletableFuture`.
+Scale4j is a modern image scaling and processing library for Java, designed as a high‑performance, maintainable solution for common image manipulation tasks. It provides a fluent, intuitive API for resize, crop, rotate, pad, and watermark operations, with minimal external dependencies and built‑in support for asynchronous processing using Java's `CompletableFuture`.
 
 The library is built for Java 17+ and leverages modern language features (records, sealed classes, pattern matching) to deliver a clean, maintainable codebase. Its modular architecture allows optional extensions for WebP and AVIF formats, Spring Boot auto‑configuration, and benchmark utilities.
 
@@ -10,7 +10,7 @@ The library is built for Java 17+ and leverages modern language features (reco
 
 * **Fluent Builder API**: Chain operations with a readable, type‑safe syntax.
 * **Asynchronous Processing**: `CompletableFuture`‑based async operations with configurable executors, including virtual‑thread support.
-* **Zero Dependencies**: Pure Java AWT; no third‑party libraries required for core functionality.
+* **Minimal Dependencies**: Uses SLF4J API for logging and TwelveMonkeys ImageIO for extended format support (JPEG, TIFF, PNG metadata); no image processing libraries required for core functionality.
 * **Comprehensive Operations**: Resize (with multiple modes and quality settings), crop, rotate, pad, and watermark (text and image).
 * **Enhanced Watermarking**: Text and image watermarks with configurable position, opacity, font, color, shadow, gradient, and tiling.
 * **Modern Image Formats**: Optional modules for WebP and AVIF encoding/decoding (requires native libraries).
