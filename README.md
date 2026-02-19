@@ -163,6 +163,170 @@ Scale4j.load(image)
     .toFile(Paths.get("output.jpg"), "jpg");
 ```
 
+### Batch Processing
+
+Scale4j provides a Batch Processing API for applying the same operations to multiple images efficiently with parallel execution support.
+
+#### Basic Usage
+
+```java
+import com.scale4j.Scale4j;
+import com.scale4j.types.ResizeMode;
+import java.util.Arrays;
+import java.util.List;
+
+// Create or load multiple images
+List<BufferedImage> images = Arrays.asList(image1, image2, image3);
+
+// Process all images: resize to 100x50 with FIT mode
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .mode(ResizeMode.FIT)
+    .execute();
+```
+
+#### Parallel Processing
+
+```java
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+// Process images in parallel using 4 threads
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .parallel(4)
+    .execute();
+
+// Or use a custom executor
+ExecutorService executor = Executors.newFixedThreadPool(4);
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .executor(executor)
+    .execute();
+executor.shutdown();
+```
+
+#### Async Processing
+
+```java
+import java.util.concurrent.CompletableFuture;
+
+// Process images asynchronously - returns list of futures
+List<CompletableFuture<BufferedImage>> futures = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .executeAsync();
+
+// Wait for all to complete
+List<BufferedImage> results = futures.stream()
+    .map(CompletableFuture::join)
+    .toList();
+
+// Or use executeAndJoin for a single combined future
+CompletableFuture<List<BufferedImage>> future = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .executeAndJoin();
+    
+List<BufferedImage> results = future.join();
+```
+
+#### Chained Operations
+
+```java
+// Apply multiple operations to all images
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(800, 600, ResizeMode.FIT)
+    .quality(ResizeQuality.HIGH)
+    .rotate(90)
+    .pad(10)
+    .watermark("© 2024")
+    .execute();
+
+// With advanced watermark options
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(800, 600)
+    .watermark(TextWatermark.builder()
+        .text("© 2024 Company")
+        .font("Arial", Font.BOLD, 24)
+        .color(Color.WHITE)
+        .opacity(0.7f)
+        .position(WatermarkPosition.BOTTOM_RIGHT)
+        .build())
+    .execute();
+```
+
+#### Loading from Files
+
+```java
+import java.io.File;
+import java.nio.file.Paths;
+
+List<File> imageFiles = Arrays.asList(
+    new File("photos/image1.jpg"),
+    new File("photos/image2.png"),
+    new File("photos/image3.webp")
+);
+
+// Load and process in one step
+List<BufferedImage> results = Scale4j.batch()
+    .imagesFromFiles(imageFiles)
+    .resize(100, 50)
+    .execute();
+
+// Save results directly
+Scale4j.batch()
+    .imagesFromFiles(imageFiles)
+    .resize(100, 50)
+    .toFiles(path -> Paths.get("output/" + path), "jpg");
+```
+
+#### Order Preservation
+
+By default, output order matches input order. Disable for better performance on large batches:
+
+```java
+// preserveOrder(false) may return results out of order but is faster
+List<BufferedImage> results = Scale4j.batch()
+    .images(images)
+    .resize(100, 50)
+    .preserveOrder(false)
+    .execute();
+```
+
+#### Error Handling
+
+Errors propagate to the caller. Wrap in try-catch for handling:
+
+```java
+try {
+    List<BufferedImage> results = Scale4j.batch()
+        .images(images)
+        .resize(100, 50)
+        .execute();
+} catch (CompletionException e) {
+    // Handle processing error
+    // Note: if one image fails, entire batch fails
+}
+```
+
+#### Performance Tips
+
+| Technique | When to Use |
+|-----------|-------------|
+| `.parallel(n)` | CPU-bound operations on multi-core systems |
+| `.preserveOrder(false)` | Large batches where order doesn't matter |
+| Custom executor | Fine-grained control over thread pools |
+| `.executeAsync()` | Non-blocking I/O, UI applications |
+| Process in chunks | Very large batches to limit memory usage |
+
+The BatchProcessorBuilder supports all Scale4jBuilder operations: `resize`, `scale`, `crop`, `rotate`, `pad`, `watermark` (text and image), with full support for quality settings and modes.
+
 ## Configuration
 
 Scale4j is designed to be configured primarily through its fluent API. The library uses sensible defaults; all customization is done programmatically via builder methods.
