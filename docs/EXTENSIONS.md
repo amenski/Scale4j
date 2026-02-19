@@ -189,25 +189,9 @@ Scale4j uses Java's ImageIO for reading and writing images. To add support for n
 1. Add the ImageIO plugin dependency
 2. Register the reader/writer with ImageIO
 
-### Adding WebP Support
+### Adding WebP Support (Planned)
 
-Create a new module (e.g., `scale4j-ext-webp`) and add the WebP ImageIO plugin:
-
-```xml
-<!-- pom.xml -->
-<dependencies>
-    <dependency>
-        <groupId>com.scale4j</groupId>
-        <artifactId>scale4j-core</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.sejda</groupId>
-        <artifactId>libwebp</artifactId>
-        <version>1.1.0</version>
-    </dependency>
-</dependencies>
-```
+Support for WebP format is planned for a future release. The extension module will be added once a stable, well‑maintained ImageIO plugin is available.
 
 ### Registering Image Readers and Writers
 
@@ -278,29 +262,9 @@ if (Scale4j.isSupportedFormat("webp")) {
 }
 ```
 
-### Adding AVIF Support (Java 21+)
+### Adding AVIF Support (Planned)
 
-AVIF support requires Java 21+ due to the native imageIO plugin requirements:
-
-```xml
-<!-- pom.xml -->
-<properties>
-    <java.version>21</java.version>
-</properties>
-
-<dependencies>
-    <dependency>
-        <groupId>com.scale4j</groupId>
-        <artifactId>scale4j-core</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>com.github.romankh3</groupId>
-        <artifactId>imageio-avif</artifactId>
-        <version>1.4</version>
-    </dependency>
-</dependencies>
-```
+Support for AVIF format is planned for a future release. Native AVIF support is available in Java 21+ via the built‑in ImageIO plugin; for earlier Java versions, a stable third‑party ImageIO plugin will be required.
 
 ---
 
@@ -314,14 +278,14 @@ Scale4j extensions should be packaged as separate Maven modules. Here's the reco
 scale4j/
 ├── pom.xml                    # Parent POM
 ├── scale4j-core/              # Core library
-├── scale4j-ext-webp/          # WebP extension
+├── scale4j-ext-spring-boot/   # Spring Boot starter
 │   ├── pom.xml
 │   └── src/main/java/...
-├── scale4j-ext-avif/          # AVIF extension
-│   ├── pom.xml
+├── scale4j-bom/               # Bill of Materials
+│   └── pom.xml
+├── scale4j-examples/          # Example projects
 │   └── src/main/java/...
-└── scale4j-ext-spring-boot/   # Spring Boot starter
-    ├── pom.xml
+└── scale4j-benchmarks/        # JMH benchmarks
     └── src/main/java/...
 ```
 

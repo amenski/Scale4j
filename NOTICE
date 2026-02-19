@@ -14,32 +14,27 @@ This software includes the following third-party libraries:
    - License: BSD 3-Clause License
    - https://github.com/haraldk/TwelveMonkeys
 
-2. libwebp
-   - Copyright (c) 2010, Google Inc.
-   - License: BSD 3-Clause License
-   - https://developers.google.com/speed/webp/
-
-3. JUnit Jupiter
+2. JUnit Jupiter
    - Copyright (c) 2015-2024 JUnit Team
    - License: Eclipse Public License 2.0
    - https://junit.org/junit5/
 
-4. AssertJ
+3. AssertJ
    - Copyright (c) 2011-2024 AssertJ Authors
    - License: Apache License 2.0
    - https://assertj.github.io/doc/
 
-5. Mockito
+4. Mockito
    - Copyright (c) 2007-2024 Mockito contributors
    - License: MIT License
    - https://site.mockito.org/
 
-6. JMH (Java Microbenchmark Harness)
+5. JMH (Java Microbenchmark Harness)
    - Copyright (c) 2014-2024 Oracle and/or its affiliates
    - License: GPLv2 + Classpath Exception
    - https://openjdk.java.net/projects/code-tools/jmh/
 
-7. Apache Maven Plugins
+6. Apache Maven Plugins
    - Copyright (c) 2000-2024 The Apache Software Foundation
    - License: Apache License 2.0
    - https://maven.apache.org/

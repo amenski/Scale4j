@@ -51,20 +51,6 @@ Add the following dependency to your `pom.xml`:
 Optional extension modules:
 
 ```xml
-<!-- WebP support -->
-<dependency>
-    <groupId>com.scale4j</groupId>
-    <artifactId>scale4j-ext-webp</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-
-<!-- AVIF support (Java 21+) -->
-<dependency>
-    <groupId>com.scale4j</groupId>
-    <artifactId>scale4j-ext-avif</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-
 <!-- Spring Boot auto‑configuration -->
 <dependency>
     <groupId>com.scale4j</groupId>
@@ -369,7 +355,7 @@ scale4j.async.threads=4
 
 ### Format Extensions
 
-WebP and AVIF support require native libraries (libwebp, libavif). The extensions automatically detect the presence of these libraries; if they are not available, the library falls back to standard JPEG/PNG encoding.
+Support for modern formats like WebP and AVIF is planned for future releases. Currently, Scale4j supports standard JPEG, PNG, GIF, and BMP formats via Java's built‑in ImageIO.
 
 ## Contributing
 

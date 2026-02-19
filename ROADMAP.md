@@ -30,7 +30,7 @@ This file tracks the progress of the tasks identified in the technical review (`
 | 3 | v1.1.0 | P1 | **Inadequate Test Coverage** – Expand test suite for all operations, async, watermarking, I/O, property‑based tests. | **In Progress** (basic tests exist; need more coverage) | ⬜ |
 | 4 | v1.1.0 | P1 | **Missing Performance Benchmarks** – Implement JMH benchmarks for resize, crop, rotate, pad, async, memory. | **Done** (JMH benchmarks implemented) | ✅ |
 | 5 | v1.2.0 | P2 | **No EXIF Metadata Preservation** – Integrate metadata library (TwelveMonkeys / Apache Sanselan) to preserve orientation and tags. | **Done** (ExifMetadata, auto‑rotation implemented) | ✅ |
-| 6 | v1.2.0 | P2 | **Limited Image Format Support** – Complete WebP and AVIF extension modules with ImageIO plugins. | **Not Started** (placeholder modules) | ⬜ |
+| 6 | v1.2.0 | P2 | **Limited Image Format Support** – WebP/AVIF extensions removed; postponed until stable plugins available. | **Postponed** (modules removed) | ⬜ |
 | 7 | v1.2.0 | P3 | **Error Handling & Logging** – Introduce dedicated exception hierarchy and optional SLF4J logging facade. | **Done** (exception hierarchy implemented) | ✅ |
 | 8 | v1.2.0 | P3 | **Memory Inefficiency** – Implement scratch buffer optimization for reduced GC pressure in chained operations. | **Done** (scratch buffer implemented) | ✅ |
 | 9 | v1.3.0 | P4 | **Missing Batch Processing API** – Add `Scale4j.batch()` method for parallel processing of image collections. | **Done** (BatchProcessor implemented) | ✅ |
@@ -55,12 +55,12 @@ This file tracks the progress of the tasks identified in the technical review (`
 **Progress:** 3/4 (75%)
 
 - [x] EXIF metadata preservation (Task 5)
-- [ ] WebP/AVIF extension modules (Task 6)
+- [ ] WebP/AVIF support (postponed) (Task 6)
 - [x] Improved error handling & logging (Task 7)
 - [x] Scratch buffer optimization (Task 8)
 
 **Target**: Enhanced format support and production‑ready robustness.
-**Next:** Complete WebP/AVIF format extensions for production readiness.
+**Next:** Re‑evaluate WebP/AVIF support when stable plugins become available.
 
 ### Milestone v1.3.0 (P4)
 **Progress:** 3/4 (75%)

@@ -25,19 +25,9 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- WebP Extension -->
-            <dependency>
-                <groupId>com.scale4j</groupId>
-                <artifactId>scale4j-ext-webp</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
-            <!-- AVIF Extension -->
-            <dependency>
-                <groupId>com.scale4j</groupId>
-                <artifactId>scale4j-ext-avif</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
+
 
             <!-- Spring Boot Starter -->
             <dependency>
@@ -46,12 +36,8 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- WebP ImageIO Dependency -->
-            <dependency>
-                <groupId>org.sejda</groupId>
-                <artifactId>libwebp</artifactId>
-                <version>1.1.0</version>
-            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 </project>

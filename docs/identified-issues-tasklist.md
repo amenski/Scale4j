@@ -10,7 +10,7 @@ This document catalogs the issues discovered during the technical review of Scal
 | 2 | Inadequate Test Coverage | 🔄 In Progress | [Task 3](#2-inadequate-test-coverage) |
 | 3 | Missing Performance Benchmarks | ✅ Done | [Task 4](#3-missing-performance-benchmarks) |
 | 4 | No EXIF Metadata Preservation | ✅ Done | [Task 5](#4-no-exif-metadata-preservation) |
-| 5 | Limited Image Format Support | ⬜ Not Started | [Task 6](#5-limited-image-format-support) |
+| 5 | Limited Image Format Support (modules removed) | ⏸️ Postponed | [Task 6](#5-limited-image-format-support) |
 | 6 | Error Handling & Logging | ✅ Done | [Task 7](#6-error-handling--logging) |
 | 7 | Memory Inefficiency | ✅ Done | [Task 8](#7-memory-inefficiency) |
 | 8 | Missing Batch Processing API | ✅ Done | [Task 9](#8-missing-batch-processing-api) |
@@ -94,14 +94,11 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 
 ## 5. Limited Image Format Support
 
-**Issue:** Core module relies on ImageIO’s built‑in formats (JPEG, PNG, GIF, BMP). WebP and AVIF extensions are declared but not implemented.
+**Issue:** Core module relies on ImageIO’s built‑in formats (JPEG, PNG, GIF, BMP). WebP and AVIF extensions were placeholders but have been removed due to lack of maintained ImageIO plugins for Java 17.
 
-**Impact:** Cannot process modern formats without additional manual setup; extensions are essentially placeholders.
+**Impact:** Cannot process WebP or AVIF formats. Users must convert images to supported formats before processing.
 
-**Task:** Complete the `scale4j-ext-webp` and `scale4j-ext-avif` modules by:
-- Adding required ImageIO plugin dependencies (e.g., `com.github.jai-imageio:jai-imageio‑webp`, `com.github.romankh3:imageio‑avif`).
-- Providing `ImageReader`/`ImageWriter` registrations.
-- Documenting usage and fallback behavior.
+**Task:** Postponed. Future releases may reintroduce format‑support modules when stable, well‑maintained ImageIO plugins become available.
 
 ---
 
