@@ -2,6 +2,25 @@
 
 This document catalogs the issues discovered during the technical review of Scale4j, categorized by type (bug, performance, feature gap, etc.). Each issue is accompanied by a concrete task that can be executed to address it.
 
+## Current Status
+
+| # | Issue | Status | ROADMAP |
+|---|-------|--------|---------|
+| 1 | Resize Algorithm Performance & Quality | ✅ Done | [Task 1](#1-resize-algorithm-performance--quality) |
+| 2 | Inadequate Test Coverage | 🔄 In Progress | [Task 3](#2-inadequate-test-coverage) |
+| 3 | Missing Performance Benchmarks | ✅ Done | [Task 4](#3-missing-performance-benchmarks) |
+| 4 | No EXIF Metadata Preservation | ✅ Done | [Task 5](#4-no-exif-metadata-preservation) |
+| 5 | Limited Image Format Support | ⬜ Not Started | [Task 6](#5-limited-image-format-support) |
+| 6 | Error Handling & Logging | ✅ Done | [Task 7](#6-error-handling--logging) |
+| 7 | Memory Inefficiency | ⬜ Not Started | [Task 8](#7-memory-inefficiency) |
+| 8 | Missing Batch Processing API | ✅ Done | [Task 9](#8-missing-batch-processing-api) |
+| 9 | No Image Filters / Effects | ✅ Done | [Task 10](#9-no-image-filters--effects) |
+| 10 | Watermark Positioning Bug | ✅ Done | [Task 2](#10-watermark-positioning-bug) |
+| 11 | Missing Documentation for Extension Development | ✅ Done | [Task 11](#11-missing-documentation-for-extension-development) |
+| 12 | CI/CD Does Not Run Benchmarks | ⬜ Not Started | [Task 12](#12-cicd-does-not-run-benchmarks) |
+
+*Note: Section numbers correspond to this document. ROADMAP task numbers show the corresponding entry in ROADMAP.md.*
+
 ---
 
 ## 1. Resize Algorithm Performance & Quality
