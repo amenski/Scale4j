@@ -76,14 +76,14 @@ public final class ImageTypeUtils {
             case BufferedImage.TYPE_INT_ARGB_PRE:
             case BufferedImage.TYPE_4BYTE_ABGR:
             case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+                return true;
             case BufferedImage.TYPE_BYTE_GRAY:
             case BufferedImage.TYPE_USHORT_GRAY:
             case BufferedImage.TYPE_BYTE_BINARY:
             case BufferedImage.TYPE_BYTE_INDEXED:
                 // Some indexed types may have alpha depending on ColorModel
-                return imageType == BufferedImage.TYPE_BYTE_GRAY 
-                        || imageType == BufferedImage.TYPE_USHORT_GRAY
-                        || imageType == BufferedImage.TYPE_BYTE_BINARY;
+                // Grayscale and binary typically don't have alpha
+                return false;
             default:
                 return false;
         }
