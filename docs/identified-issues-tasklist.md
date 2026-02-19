@@ -12,7 +12,7 @@ This document catalogs the issues discovered during the technical review of Scal
 | 4 | No EXIF Metadata Preservation | ✅ Done | [Task 5](#4-no-exif-metadata-preservation) |
 | 5 | Limited Image Format Support | ⬜ Not Started | [Task 6](#5-limited-image-format-support) |
 | 6 | Error Handling & Logging | ✅ Done | [Task 7](#6-error-handling--logging) |
-| 7 | Memory Inefficiency | ⬜ Not Started | [Task 8](#7-memory-inefficiency) |
+| 7 | Memory Inefficiency | ✅ Done | [Task 8](#7-memory-inefficiency) |
 | 8 | Missing Batch Processing API | ✅ Done | [Task 9](#8-missing-batch-processing-api) |
 | 9 | No Image Filters / Effects | ✅ Done | [Task 10](#9-no-image-filters--effects) |
 | 10 | Watermark Positioning Bug | ✅ Done | [Task 2](#10-watermark-positioning-bug) |
@@ -121,7 +121,9 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 
 **Impact:** Higher memory footprint and GC pressure when processing multiple images or large batches.
 
-**Task:** Implement a lightweight pooling mechanism for `BufferedImage` objects (e.g., using `SoftReference`). Allow re‑use of intermediate images when dimensions match. Add a `BufferReuse` option in `Scale4jBuilder`.
+**Task:** Implement scratch buffer optimization to reuse a single transient `BufferedImage` buffer within each builder chain when dimensions match. This eliminates unnecessary allocations for chained operations.
+
+**Status:** ✅ Implemented via scratch buffer technique (see README).
 
 ---
 

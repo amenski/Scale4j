@@ -11,12 +11,12 @@ This file tracks the progress of the tasks identified in the technical review (`
 
 ## Progress Summary
 
-**Overall:** 8/12 tasks completed (66.7%)
+**Overall:** 9/12 tasks completed (75%)
 
 | Milestone | Progress | Target |
 |-----------|----------|--------|
 | v1.1.0 (P0/P1) | 3/4 (75%) | Stable, performant core |
-| v1.2.0 (P2/P3) | 2/4 (50%) | Enhanced format support & production‑ready robustness |
+| v1.2.0 (P2/P3) | 3/4 (75%) | Enhanced format support & production‑ready robustness |
 | v1.3.0 (P4) | 3/4 (75%) | Advanced features & ecosystem growth |
 
 **Current Release:** `v1.1.0-alpha` tagged at `4a1cc10`
@@ -32,7 +32,7 @@ This file tracks the progress of the tasks identified in the technical review (`
 | 5 | v1.2.0 | P2 | **No EXIF Metadata Preservation** – Integrate metadata library (TwelveMonkeys / Apache Sanselan) to preserve orientation and tags. | **Done** (ExifMetadata, auto‑rotation implemented) | ✅ |
 | 6 | v1.2.0 | P2 | **Limited Image Format Support** – Complete WebP and AVIF extension modules with ImageIO plugins. | **Not Started** (placeholder modules) | ⬜ |
 | 7 | v1.2.0 | P3 | **Error Handling & Logging** – Introduce dedicated exception hierarchy and optional SLF4J logging facade. | **Done** (exception hierarchy implemented) | ✅ |
-| 8 | v1.2.0 | P3 | **Memory Inefficiency** – Implement `BufferedImage` pooling / reuse for chained operations. | **Not Started** | ⬜ |
+| 8 | v1.2.0 | P3 | **Memory Inefficiency** – Implement scratch buffer optimization for reduced GC pressure in chained operations. | **Done** (scratch buffer implemented) | ✅ |
 | 9 | v1.3.0 | P4 | **Missing Batch Processing API** – Add `Scale4j.batch()` method for parallel processing of image collections. | **Done** (BatchProcessor implemented) | ✅ |
 | 10 | v1.3.0 | P4 | **No Image Filters / Effects** – Create filter package (blur, sharpen, brightness, contrast, grayscale). | **Done** (FilterOperation implemented) | ✅ |
 | 11 | v1.3.0 | P5 | **Missing Documentation for Extension Development** – Write `EXTENSIONS.md` guide for custom operations and formats. | **Done** (EXTENSIONS.md exists) | ✅ |
@@ -52,15 +52,15 @@ This file tracks the progress of the tasks identified in the technical review (`
 **Release:** `v1.1.0-alpha` tagged, full release pending test coverage completion.
 
 ### Milestone v1.2.0 (P2/P3)
-**Progress:** 2/4 (50%)
+**Progress:** 3/4 (75%)
 
 - [x] EXIF metadata preservation (Task 5)
 - [ ] WebP/AVIF extension modules (Task 6)
 - [x] Improved error handling & logging (Task 7)
-- [ ] Memory pooling (Task 8)
+- [x] Scratch buffer optimization (Task 8)
 
 **Target**: Enhanced format support and production‑ready robustness.
-**Next:** Complete format extensions and memory optimization for production readiness.
+**Next:** Complete WebP/AVIF format extensions for production readiness.
 
 ### Milestone v1.3.0 (P4)
 **Progress:** 3/4 (75%)
