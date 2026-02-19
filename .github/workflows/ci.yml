@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly benchmark run at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Run tests
+        run: mvn test -B
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 7
+
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Run benchmarks
+        run: |
+          mvn package -DskipTests -B
+          java -jar scale4j-benchmarks/target/scale4j-benchmarks-*.jar -r json -f results.json
+
+      - name: Download baseline
+        if: github.event_name == 'schedule'
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: ci.yml
+          branch: main
+          name: benchmark-results
+          path: baseline
+          continue-on-error: true
+
+      - name: Compare benchmarks
+        if: github.event_name == 'schedule'
+        run: |
+          if [ -f baseline/results.json ]; then
+            echo "Baseline found, comparing..."
+            # Simple comparison - fail if any benchmark regressed by more than 20%
+            python3 << 'EOF'
+            import json
+            import sys
+
+            with open('results.json') as f:
+                current = json.load(f)
+            with open('baseline/results.json') as f:
+                baseline = json.load(f)
+
+            primaryMetric = "benchmark.metric": "score"
+
+            regressions = []
+            for bench in current["benchmarks"]:
+                name = bench["benchmark"]
+                if name in baseline:
+                    curr = bench.get("primaryMetric", {}).get("score", 0)
+                    base = baseline[name].get("primaryMetric", {}).get("score", 0)
+                    if base > 0:
+                        change = (curr - base) / base * 100
+                        if change < -20:
+                            regressions.append(f"{name}: {change:.1f}% regression")
+
+            if regressions:
+                print("REGRESSIONS DETECTED:")
+                for r in regressions:
+                    print(f"  - {r}")
+                sys.exit(1)
+            else:
+                print("No significant regressions detected.")
+          else
+            echo "No baseline found, skipping comparison."
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: results.json
+          retention-days: 30

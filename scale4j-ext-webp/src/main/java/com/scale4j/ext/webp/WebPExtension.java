@@ -23,14 +23,18 @@ import java.util.logging.Logger;
  * WebP format extension for Scale4j.
  * 
  * <p>This class provides WebP format support by initializing the TwelveMonkeys ImageIO
- * WebP plugin. When this module is on the classpath, WebP images can be read and written
- * automatically through Scale4j's ImageLoader and ImageSaver.</p>
+ * WebP plugin. When this module is on the classpath, WebP images can be read through
+ * Scale4j's ImageLoader.</p>
+ * 
+ * <p><strong>Note:</strong> WebP writing is not supported in the open source TwelveMonkeys
+ * plugin. For WebP encoding, consider using commercial solutions like JDeli or
+ * implementing native libwebp integration.</p>
  * 
  * <p>Usage:</p>
  * <pre>
- * // WebP support is auto-initialized when this module is on classpath
+ * // WebP read support is auto-initialized when this module is on classpath
  * BufferedImage image = Scale4j.getImageLoader().load("input.webp");
- * Scale4j.getImageSaver().save(image, "output.webp");
+ * // WebP writing is NOT supported - will fall back to PNG
  * </pre>
  * 
  * @author Scale4j
