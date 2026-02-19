@@ -117,6 +117,16 @@ public final class WebPExtension {
         return "1.0.0";
     }
 
+    /**
+     * Gets the minimum Java version required for WebP support.
+     * WebP is supported via the TwelveMonkeys plugin on Java 8+.
+     *
+     * @return the minimum Java version
+     */
+    public static String getMinimumJavaVersion() {
+        return "8";
+    }
+
     // Static initialization block to auto-register when loaded
     static {
         initialize();

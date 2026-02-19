@@ -92,25 +92,8 @@ public final class AVIFExtension {
             LOGGER.warning("Failed to load external AVIF plugin: " + e.getMessage());
         }
         
-        // Check for other common AVIF plugins
-        String[] pluginClasses = {
-            "com.waicool20.cv5.AVIF.AVIFImageReader",
-            "org.libjpegturbo.jpegarchiver.avif.AVIFImageReaderSpi"
-        };
-        
-        for (String pluginClass : pluginClasses) {
-            try {
-                Class.forName(pluginClass, true, AVIFExtension.class.getClassLoader());
-                if (ImageIO.getImageReadersBySuffix(AVIF_FORMAT).hasNext()) {
-                    LOGGER.info("AVIF format support enabled via: " + pluginClass);
-                    supportLevel = "plugin";
-                    initialized = true;
-                    return;
-                }
-            } catch (ClassNotFoundException ignored) {
-                // Plugin not available, continue
-            }
-        }
+        // Note: Additional external plugins (e.g., jniojar/avif-native) can be auto-detected
+        // if they register themselves with ImageIO via SPI
         
         if (!initialized) {
             LOGGER.warning("AVIF format not available. Java 21+ required for native support, " +
