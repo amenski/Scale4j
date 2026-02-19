@@ -186,27 +186,24 @@ Store benchmark results in `docs/benchmarks/` and integrate with CI (run on sche
 |----------|-------|--------|--------|--------|
 | P0 | Resize Algorithm Performance | Medium | High | ✅ DONE |
 | P0 | Watermark Positioning Bug | Low | Medium | ✅ DONE |
-| P1 | Inadequate Test Coverage | High | High | ✅ DONE |
+| P1 | Inadequate Test Coverage | High | High | 🔄 IN PROGRESS |
 | P1 | Missing Performance Benchmarks | Medium | Medium | ✅ DONE |
 | P2 | No EXIF Metadata Preservation | High | High | ✅ DONE |
-| P2 | Limited Image Format Support | Medium | Medium | ✅ DONE |
-| P3 | Error Handling & Logging | Low | Medium | 🔴 TODO |
-| P3 | Memory Inefficiency | Medium | Low |
-| P4 | Missing Batch Processing API | Medium | Low |
-| P4 | No Image Filters / Effects | High | Medium |
-| P5 | Documentation for Extensions | Low | Low |
-| P5 | Batch Processing API | Medium | Medium | ✅ DONE |
-| P5 | Extensions Documentation | Low | Low | ✅ DONE |
+| P2 | Limited Image Format Support | Medium | Medium | ⬜ NOT STARTED |
+| P3 | Error Handling & Logging | Low | Medium | ✅ DONE |
+| P3 | Memory Inefficiency | Medium | Low | ✅ DONE |
+| P4 | Missing Batch Processing API | Medium | Low | ✅ DONE |
+| P4 | No Image Filters / Effects | High | Medium | ✅ DONE |
+| P5 | Documentation for Extensions | Low | Low | ✅ DONE |
 
 ---
 
 ## Next Steps
 
-1. Create GitHub issues for each task.
-2. For each P0/P1 issue, assign a milestone (e.g., `v1.1.0`).
-3. Begin implementation with the resize algorithm replacement, as it is the most critical performance bottleneck.
-4. After fixing the watermark bug, add comprehensive watermark tests.
-5. Expand test suite to reach >80% line coverage.
-6. Implement JMH benchmarks and integrate into CI.
+1. **Improve test coverage** – Expand test suite to >80% line coverage, add property‑based and integration tests.
+2. **Implement WebP/AVIF format support** – Complete the placeholder extension modules with actual format support.
+3. **Set up CI benchmark runs** – Create GitHub Actions workflow to run JMH benchmarks on schedule.
+4. **Push v1.1.0‑alpha tag to remote** – Share the milestone with collaborators.
 
-*This task list was generated from the technical review conducted on 2026‑02‑14.*
+*This task list was generated from the technical review conducted on 2026‑02‑14.*  
+*Updated based on current progress as of 2026‑02‑19.*
