@@ -41,23 +41,26 @@ public final class WebPExtension {
     private static final Logger LOGGER = Logger.getLogger(WebPExtension.class.getName());
     
     private static final String WEBP_FORMAT = "webp";
-    private static boolean initialized = false;
+    private static volatile boolean initialized = false;
 
     /**
      * Initializes the WebP extension by registering the WebP format with ImageIO.
      * This method is automatically called when the module is loaded.
+     * <p>
+     * NOTE: The plugin class name is hardcoded for TwelveMonkeys ImageIO WebP plugin.
+     * If using a different WebP plugin implementation, update this class name accordingly.
      */
     public static synchronized void initialize() {
         if (initialized) {
             return;
         }
-        
+
         try {
             // Trigger class loading of the WebP ImageIO plugin
-            Class.forName("com.twelvemonkeys.imageio.plugins.webp.WebPImageReaderSpi", 
-                    true, 
+            Class.forName("com.twelvemonkeys.imageio.plugins.webp.WebPImageReaderSpi",
+                    true,
                     WebPExtension.class.getClassLoader());
-            
+
             // Check if WebP is now supported
             if (ImageIO.getImageReadersBySuffix(WEBP_FORMAT).hasNext()) {
                 LOGGER.info("WebP format support enabled via TwelveMonkeys ImageIO");
@@ -78,6 +81,9 @@ public final class WebPExtension {
      * @return true if WebP reading is supported
      */
     public static boolean isReadSupported() {
+        if (!initialized) {
+            initialize();
+        }
         return ImageIO.getImageReadersBySuffix(WEBP_FORMAT).hasNext();
     }
 
@@ -87,6 +93,9 @@ public final class WebPExtension {
      * @return true if WebP writing is supported
      */
     public static boolean isWriteSupported() {
+        if (!initialized) {
+            initialize();
+        }
         return ImageIO.getImageWritersBySuffix(WEBP_FORMAT).hasNext();
     }
 

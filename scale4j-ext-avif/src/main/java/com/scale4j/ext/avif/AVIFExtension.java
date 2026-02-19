@@ -46,8 +46,8 @@ public final class AVIFExtension {
     private static final Logger LOGGER = Logger.getLogger(AVIFExtension.class.getName());
     
     private static final String AVIF_FORMAT = "avif";
-    private static boolean initialized = false;
-    private static String supportLevel = "none";
+    private static volatile boolean initialized = false;
+    private static volatile String supportLevel = "none";
 
     /**
      * Initializes the AVIF extension by checking for AVIF support in ImageIO.
@@ -75,6 +75,9 @@ public final class AVIFExtension {
         }
         
         // Try to load external AVIF plugin (for Java 11-20)
+        // NOTE: This hardcoded class name is for a specific external plugin.
+        // Other AVIF plugins (e.g., jniojar/avif-native) use SPI registration
+        // and will be auto-detected below.
         try {
             Class.forName("io.github.nicklassydney.avif.AVIFImageReaderSpi", 
                     true, 
