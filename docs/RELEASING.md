@@ -2,25 +2,10 @@
 
 ## Pre-flight Checklist
 
-### 1. Fill in placeholder properties in `pom.xml`
-
-The root `pom.xml` has several unset placeholders that must be filled before release:
-- `${github-username}` - your GitHub username
-- `${organization-name}`, `${organization-url}`
-- `${developer-id}`, `${developer-name}`, `${developer-email}`
-
-### 2. Update the version
-
-Remove `-SNAPSHOT` suffix for a release:
-
-```xml
-<version>1.0.0</version>
-```
-
-### 3. Maven Central account setup (one-time)
+### 1. Maven Central account setup (one-time)
 
 - Register at https://central.sonatype.com
-- Claim the `com.scale4j` namespace (requires proving ownership of the `scale4j.com` domain), **or** use `io.github.<username>` which is verified automatically via GitHub (easier)
+- Claim the `io.github.amenski` namespace — verified automatically via GitHub
 - Add OSSRH credentials to `~/.m2/settings.xml`:
 
 ```xml
@@ -35,24 +20,34 @@ Remove `-SNAPSHOT` suffix for a release:
 </settings>
 ```
 
-### 4. GPG key setup
+### 2. GPG key setup (one-time)
 
 ```bash
 gpg --gen-key
 gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
 ```
 
-### 5. Deploy
+### 3. Update the version
+
+Remove the `-SNAPSHOT` suffix using the Maven versions plugin (updates all modules at once):
 
 ```bash
+mvn versions:set -DnewVersion=1.0.0 -DgenerateBackupPoms=false
+```
+
+### 4. Deploy
+
+```bash
+git commit -am "release: 1.0.0"
 mvn clean deploy -Prelease
 ```
 
----
+### 5. Post-release: bump to next snapshot
 
-## Namespace Recommendation
-
-Since `com.scale4j` requires domain ownership verification, consider using `io.github.<your-username>` as `groupId` — it's verified automatically via GitHub. You would need to update the `groupId` in all modules accordingly.
+```bash
+mvn versions:set -DnewVersion=1.1.0-SNAPSHOT -DgenerateBackupPoms=false
+git commit -am "chore: bump version to 1.1.0-SNAPSHOT"
+```
 
 ---
 
