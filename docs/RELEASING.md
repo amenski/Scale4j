@@ -55,6 +55,28 @@ Create or edit `~/.m2/settings.xml`:
 - `YOUR_SONATYPE_USERNAME` — your username at https://central.sonatype.com
 - `YOUR_SONATYPE_TOKEN` — generate a token from your account settings (User Token, not your password)
 
+To avoid being prompted for your GPG passphrase during deployment, add it to the same file:
+
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>YOUR_SONATYPE_USERNAME</username>
+      <password>YOUR_SONATYPE_TOKEN</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <properties>
+        <gpg.passphrase>YOUR_GPG_PASSPHRASE</gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+</settings>
+```
+
 ### 4. Update the version
 
 Remove the `-SNAPSHOT` suffix using the Maven versions plugin (updates all modules at once):
