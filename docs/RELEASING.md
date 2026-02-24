@@ -24,10 +24,38 @@
 
 ```bash
 gpg --gen-key
-gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
 ```
 
-### 3. Update the version
+Follow the prompts (use your name + email). Then get your key ID and publish it:
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+# Look for something like: sec   rsa3072/AABBCCDD
+# AABBCCDD is your key ID
+
+gpg --keyserver keyserver.ubuntu.com --send-keys AABBCCDD
+```
+
+### 3. `~/.m2/settings.xml` credentials (one-time)
+
+Create or edit `~/.m2/settings.xml`:
+
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>ossrh</id>
+      <username>YOUR_SONATYPE_USERNAME</username>
+      <password>YOUR_SONATYPE_TOKEN</password>
+    </server>
+  </servers>
+</settings>
+```
+
+- `YOUR_SONATYPE_USERNAME` — your username at https://central.sonatype.com
+- `YOUR_SONATYPE_TOKEN` — generate a token from your account settings (User Token, not your password)
+
+### 4. Update the version
 
 Remove the `-SNAPSHOT` suffix using the Maven versions plugin (updates all modules at once):
 
@@ -35,14 +63,14 @@ Remove the `-SNAPSHOT` suffix using the Maven versions plugin (updates all modul
 mvn versions:set -DnewVersion=1.0.0 -DgenerateBackupPoms=false
 ```
 
-### 4. Deploy
+### 5. Deploy
 
 ```bash
 git commit -am "release: 1.0.0"
 mvn clean deploy -Prelease
 ```
 
-### 5. Post-release: bump to next snapshot
+### 6. Post-release: bump to next snapshot
 
 ```bash
 mvn versions:set -DnewVersion=1.1.0-SNAPSHOT -DgenerateBackupPoms=false
