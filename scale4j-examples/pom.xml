@@ -21,6 +21,15 @@
             <groupId>io.github.amenski</groupId>
             <artifactId>scale4j-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.amenski</groupId>
+            <artifactId>scale4j-ext-spring-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -31,6 +40,14 @@
                 <version>3.1.0</version>
                 <configuration>
                     <mainClass>com.scale4j.examples.ReadmeImageGenerator</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <mainClass>com.scale4j.examples.springboot.Scale4jExampleApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
