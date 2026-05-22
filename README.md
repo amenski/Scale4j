@@ -72,6 +72,19 @@ mvn clean verify
 
 ## Features
 
+### Thumbnails
+
+The most common use case — downsize an image to a maximum dimension while preserving aspect ratio.
+
+```java
+Scale4j.load(image)
+    .resize(150, 150, ResizeMode.FIT)
+    .quality(ResizeQuality.HIGH)
+    .toFile(Paths.get("thumb.jpg"), "jpg");
+```
+
+Use `FIT` mode to never exceed the target bounds, or `FILL` to crop to an exact square.
+
 ### Resize
 
 Four modes control how the image fits the target dimensions. Four quality levels trade speed for fidelity.
