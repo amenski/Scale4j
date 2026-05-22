@@ -54,6 +54,8 @@ implementation 'io.github.amenski:scale4j-core:1.0.0'
 
 ### Spring Boot
 
+Add the starter and configure defaults in `application.yml`:
+
 ```xml
 <dependency>
     <groupId>io.github.amenski</groupId>
@@ -61,6 +63,28 @@ implementation 'io.github.amenski:scale4j-core:1.0.0'
     <version>1.0.0</version>
 </dependency>
 ```
+
+```yaml
+# application.yml
+scale4j:
+  default-quality: HIGH
+  default-mode: FIT
+  async:
+    threads: 8
+```
+
+Then inject `Scale4jTemplate` instead of calling `Scale4j.load()` directly:
+
+```java
+@Autowired
+private Scale4jTemplate scale4j;
+
+BufferedImage result = scale4j.load(image)
+    .resize(300, 200)
+    .build();
+```
+
+The template bakes in your configured defaults. You can still override them per-call with `.mode(...)` or `.quality(...)` on the returned builder.
 
 ### Build from Source
 
