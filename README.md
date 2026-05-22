@@ -1,384 +1,256 @@
 # Scale4j
 
-## Description
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.amenski/scale4j-core?color=blue)](https://central.sonatype.com/artifact/io.github.amenski/scale4j-core)
+[![Apache License 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Java 17+](https://img.shields.io/badge/Java-17%2B-orange?logo=openjdk&logoColor=white)](https://adoptium.net/)
 
-Scale4j is a modern image scaling and processing library for Java, designed as a high‑performance, maintainable solution for common image manipulation tasks. It provides a fluent, intuitive API for resize, crop, rotate, pad, and watermark operations, with minimal external dependencies and built‑in support for asynchronous processing using Java's `CompletableFuture`.
+**Scale4j** is a modern image processing library for Java 17+. Resize, crop, rotate, filter, pad, and watermark images with a clean, fluent API.
 
-The library is built for Java 17+ and leverages modern language features (records, sealed classes, pattern matching) to deliver a clean, maintainable codebase. Its modular architecture allows optional extensions for WebP and AVIF formats, Spring Boot auto‑configuration, and benchmark utilities.
+| Original | Grayscale | Sepia | Edge Detect | Blur |
+|---|---|---|---|---|
+| ![](docs/images/original.jpg) | ![](docs/images/grayscale.jpg) | ![](docs/images/sepia.jpg) | ![](docs/images/edge-detect.jpg) | ![](docs/images/blur.jpg) |
 
-## Features
+## Quick Start
 
-* **Fluent Builder API**: Chain operations with a readable, type‑safe syntax.
-* **Asynchronous Processing**: `CompletableFuture`‑based async operations with configurable executors, including virtual‑thread support.
-* **Minimal Dependencies**: Uses SLF4J API for logging and TwelveMonkeys ImageIO for extended format support (JPEG, TIFF, PNG metadata); no image processing libraries required for core functionality.
-* **Comprehensive Operations**: Resize (with multiple modes and quality settings), crop, rotate, pad, and watermark (text and image).
-* **Enhanced Watermarking**: Text and image watermarks with configurable position, opacity, font, color, shadow, gradient, and tiling.
-* **Modern Image Formats**: Optional modules for WebP and AVIF encoding/decoding (requires native libraries).
-* **Spring Boot Integration**: Auto‑configuration and starter module for seamless use in Spring applications.
-* **Streaming‑Friendly**: Memory‑efficient processing of large images via pluggable streaming API.
-* **Extensible Plugin System**: Add custom operations or format support through a simple SPI.
-* **Comprehensive Testing**: Full JUnit 5 test suite, property‑based tests, and JMH benchmarks.
-
-## Internal Optimizations
-
-Scale4j uses a **scratch buffer** technique to reduce garbage collection pressure during chained operations. When multiple operations produce images of the same dimensions and type, Scale4j reuses a single transient `BufferedImage` buffer within each builder chain. This eliminates unnecessary allocations for common scenarios like repeated resizes to the same size.
-
-The scratch buffer is:
-
-- **Per‑builder**: Each `Scale4jBuilder` instance maintains its own buffer (not shared across builders or threads).
-- **Automatic**: No configuration required—the optimization is always enabled.
-- **Safe**: Buffers are cleared before reuse when necessary (e.g., padding operations).
+```java
+BufferedImage result = Scale4j.load(image)
+    .resize(300, 200)
+    .toFile(Paths.get("output.jpg"), "jpg");
+```
 
 ## Installation
 
-### Prerequisites
-
-* Java 17 or higher
-* Maven 3.6+ (or Gradle) for building
-
-### Maven Dependency
-
-Add the following dependency to your `pom.xml`:
+### Maven
 
 ```xml
 <dependency>
-    <groupId>com.scale4j</groupId>
+    <groupId>io.github.amenski</groupId>
     <artifactId>scale4j-core</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
-Optional extension modules:
+### Gradle
+
+```groovy
+implementation 'io.github.amenski:scale4j-core:1.0.0'
+```
+
+### Bill of Materials
 
 ```xml
-<!-- Spring Boot auto‑configuration -->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.github.amenski</groupId>
+            <artifactId>scale4j-bom</artifactId>
+            <version>1.0.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+### Spring Boot
+
+```xml
 <dependency>
-    <groupId>com.scale4j</groupId>
+    <groupId>io.github.amenski</groupId>
     <artifactId>scale4j-ext-spring-boot</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
-### Building from Source
+### Build from Source
 
 ```bash
-# Clone the repository
-git clone https://github.com/${github-username}/scale4j.git
+git clone https://github.com/amenski/scale4j.git
 cd scale4j
-
-# Compile and run tests
 mvn clean verify
-
-# Build the JAR files
-mvn clean package
-
-# Format code (optional)
-mvn com.coveo:fmt-maven-plugin:check
 ```
 
-## Usage
+## Features
 
-### Basic Example
+### Resize
+
+Four modes control how the image fits the target dimensions. Four quality levels trade speed for fidelity.
 
 ```java
-import com.scale4j.Scale4j;
-import com.scale4j.types.ResizeMode;
-
-BufferedImage result = Scale4j.load(image)
-    .resize(300, 200)
-    .mode(ResizeMode.FIT)
+Scale4j.load(image)
+    .resize(200, 200, ResizeMode.FIT)
     .quality(ResizeQuality.HIGH)
     .build();
 ```
 
-### Chaining Multiple Operations
+| FIT (preserves aspect ratio) | FILL (fills target, may crop) |
+|---|---|
+| ![](docs/images/resize-fit.jpg) | ![](docs/images/resize-fill.jpg) |
+
+### Crop
+
+Extract a rectangular region.
 
 ```java
-BufferedImage result = Scale4j.load(image)
-    .resize(800, 600, ResizeMode.FIT)
-    .crop(100, 100, 600, 400)
-    .rotate(90)
-    .pad(10, Color.WHITE)
-    .watermark("© 2024")
+Scale4j.load(image)
+    .crop(100, 75, 200, 150)
     .build();
 ```
 
+![](docs/images/crop.jpg)
+
+*Center-cropped 200x150 region from the original.*
+
+### Rotate
+
+Rotate by any angle in degrees. Empty corners fill with the specified background color.
+
+```java
+Scale4j.load(image)
+    .rotate(45, Color.WHITE)
+    .build();
+```
+
+| 90 degrees | 45 degrees |
+|---|---|
+| ![](docs/images/rotate-90.jpg) | ![](docs/images/rotate-45.jpg) |
+
+### Pad
+
+Add a border around the image. Supports uniform or per-side padding with any color.
+
+```java
+Scale4j.load(image)
+    .pad(20, Color.WHITE)
+    .build();
+```
+
+![](docs/images/pad.jpg)
+
+### Watermark
+
+Add text or image watermarks with configurable position, opacity, font, and background.
+
+```java
+Scale4j.load(image)
+    .watermark(TextWatermark.builder()
+        .text("Scale4j")
+        .font("Arial", Font.BOLD, 36)
+        .opacity(0.7f)
+        .position(WatermarkPosition.BOTTOM_RIGHT)
+        .build())
+    .build();
+```
+
+| Text Watermark | Image Watermark |
+|---|---|
+| ![](docs/images/watermark-text.jpg) | ![](docs/images/watermark-image.jpg) |
+
+### Filters
+
+Apply creative and corrective filters with a single method call.
+
+```java
+Scale4j.load(image)
+    .grayscale()
+    .sepia(0.8f)
+    .blur(5f)
+    .sharpen()
+    .edgeDetect()
+    .vignette(0.7f)
+    .invert()
+    .build();
+```
+
+| Original | Grayscale | Sepia | Blur | Sharpen |
+|---|---|---|---|---|
+| ![](docs/images/original.jpg) | ![](docs/images/grayscale.jpg) | ![](docs/images/sepia.jpg) | ![](docs/images/blur.jpg) | ![](docs/images/sharpen.jpg) |
+
+| Edge Detect | Vignette | Invert | Brightness | Contrast |
+|---|---|---|---|---|
+| ![](docs/images/edge-detect.jpg) | ![](docs/images/vignette.jpg) | ![](docs/images/invert.jpg) | ![](docs/images/brightness.jpg) | ![](docs/images/contrast.jpg) |
+
+### Flip & Flop
+
+Mirror the image horizontally or vertically.
+
+```java
+Scale4j.load(image).flip().build();  // horizontal mirror
+Scale4j.load(image).flop().build();  // vertical mirror
+```
+
+| Flip | Flop |
+|---|---|
+| ![](docs/images/flip.jpg) | ![](docs/images/flop.jpg) |
+
+### Chained Operations
+
+Combine any sequence of operations in a single fluent chain.
+
+```java
+Scale4j.load(image)
+    .resize(300, 225, ResizeMode.FIT)
+    .crop(25, 25, 250, 175)
+    .rotate(90)
+    .pad(15, Color.WHITE)
+    .watermark(TextWatermark.builder()
+        .text("Scale4j")
+        .font("Arial", Font.BOLD, 28)
+        .opacity(0.7f)
+        .position(WatermarkPosition.BOTTOM_RIGHT)
+        .build())
+    .build();
+```
+
+![](docs/images/chained.jpg)
+
+## Advanced Features
+
 ### Asynchronous Processing
+
+Leverages virtual threads (Java 21+) or work-stealing pools for non-blocking execution.
 
 ```java
 CompletableFuture<BufferedImage> future = Scale4j.async()
     .load(image)
     .resize(300, 200)
-    .mode(ResizeMode.AUTOMATIC)
-    .quality(ResizeQuality.HIGH)
+    .automatic()
+    .medium()
     .apply();
 
 BufferedImage result = future.join();
 ```
 
-### Watermarking
-
-```java
-// Text watermark with advanced options
-Scale4j.load(image)
-    .watermark(TextWatermark.builder()
-        .text("© 2024")
-        .font("Arial", Font.BOLD, 24)
-        .color(Color.WHITE)
-        .opacity(0.7f)
-        .position(WatermarkPosition.BOTTOM_RIGHT)
-        .build())
-    .build();
-
-// Image watermark
-Scale4j.load(image)
-    .watermark(ImageWatermark.builder()
-        .image(logoImage)
-        .opacity(0.5f)
-        .scale(0.25f)
-        .position(WatermarkPosition.TOP_LEFT)
-        .build())
-    .build();
-```
-
-### Saving the Processed Image
-
-```java
-Scale4j.load(image)
-    .resize(800, 600)
-    .toFile(Paths.get("output.jpg"), "jpg");
-```
-
 ### Batch Processing
 
-Scale4j provides a Batch Processing API for applying the same operations to multiple images efficiently with parallel execution support.
-
-#### Basic Usage
+Process multiple images in parallel with configurable thread count.
 
 ```java
-import com.scale4j.Scale4j;
-import com.scale4j.types.ResizeMode;
-import java.util.Arrays;
-import java.util.List;
-
-// Create or load multiple images
-List<BufferedImage> images = Arrays.asList(image1, image2, image3);
-
-// Process all images: resize to 100x50 with FIT mode
-List<BufferedImage> results = Scale4j.batch()
-    .images(images)
-    .resize(100, 50)
-    .mode(ResizeMode.FIT)
-    .execute();
-```
-
-#### Parallel Processing
-
-```java
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-// Process images in parallel using 4 threads
 List<BufferedImage> results = Scale4j.batch()
     .images(images)
     .resize(100, 50)
     .parallel(4)
     .execute();
-
-// Or use a custom executor
-ExecutorService executor = Executors.newFixedThreadPool(4);
-List<BufferedImage> results = Scale4j.batch()
-    .images(images)
-    .resize(100, 50)
-    .executor(executor)
-    .execute();
-executor.shutdown();
 ```
 
-#### Async Processing
+### EXIF Auto-Rotate
+
+Automatically correct orientation using embedded EXIF metadata.
 
 ```java
-import java.util.concurrent.CompletableFuture;
-
-// Process images asynchronously - returns list of futures
-List<CompletableFuture<BufferedImage>> futures = Scale4j.batch()
-    .images(images)
-    .resize(100, 50)
-    .executeAsync();
-
-// Wait for all to complete
-List<BufferedImage> results = futures.stream()
-    .map(CompletableFuture::join)
-    .toList();
-
-// Or use executeAndJoin for a single combined future
-CompletableFuture<List<BufferedImage>> future = Scale4j.batch()
-    .images(images)
-    .resize(100, 50)
-    .executeAndJoin();
-    
-List<BufferedImage> results = future.join();
+Scale4j.loadWithMetadata(file)
+    .autoRotate()
+    .toFile(output, "jpg");
 ```
 
-#### Chained Operations
+## Performance
 
-```java
-// Apply multiple operations to all images
-List<BufferedImage> results = Scale4j.batch()
-    .images(images)
-    .resize(800, 600, ResizeMode.FIT)
-    .quality(ResizeQuality.HIGH)
-    .rotate(90)
-    .pad(10)
-    .watermark("© 2024")
-    .execute();
-
-// With advanced watermark options
-List<BufferedImage> results = Scale4j.batch()
-    .images(images)
-    .resize(800, 600)
-    .watermark(TextWatermark.builder()
-        .text("© 2024 Company")
-        .font("Arial", Font.BOLD, 24)
-        .color(Color.WHITE)
-        .opacity(0.7f)
-        .position(WatermarkPosition.BOTTOM_RIGHT)
-        .build())
-    .execute();
-```
-
-#### Loading from Files
-
-```java
-import java.io.File;
-import java.nio.file.Paths;
-
-List<File> imageFiles = Arrays.asList(
-    new File("photos/image1.jpg"),
-    new File("photos/image2.png"),
-    new File("photos/image3.webp")
-);
-
-// Load and process in one step
-List<BufferedImage> results = Scale4j.batch()
-    .imagesFromFiles(imageFiles)
-    .resize(100, 50)
-    .execute();
-
-// Save results directly
-Scale4j.batch()
-    .imagesFromFiles(imageFiles)
-    .resize(100, 50)
-    .toFiles(path -> Paths.get("output/" + path), "jpg");
-```
-
-#### Order Preservation
-
-By default, output order matches input order. Disable for better performance on large batches:
-
-```java
-// preserveOrder(false) may return results out of order but is faster
-List<BufferedImage> results = Scale4j.batch()
-    .images(images)
-    .resize(100, 50)
-    .preserveOrder(false)
-    .execute();
-```
-
-#### Error Handling
-
-Errors propagate to the caller. Wrap in try-catch for handling:
-
-```java
-try {
-    List<BufferedImage> results = Scale4j.batch()
-        .images(images)
-        .resize(100, 50)
-        .execute();
-} catch (CompletionException e) {
-    // Handle processing error
-    // Note: if one image fails, entire batch fails
-}
-```
-
-#### Performance Tips
-
-| Technique | When to Use |
-|-----------|-------------|
-| `.parallel(n)` | CPU-bound operations on multi-core systems |
-| `.preserveOrder(false)` | Large batches where order doesn't matter |
-| Custom executor | Fine-grained control over thread pools |
-| `.executeAsync()` | Non-blocking I/O, UI applications |
-| Process in chunks | Very large batches to limit memory usage |
-
-The BatchProcessorBuilder supports all Scale4jBuilder operations: `resize`, `scale`, `crop`, `rotate`, `pad`, `watermark` (text and image), with full support for quality settings and modes.
-
-## Configuration
-
-Scale4j is designed to be configured primarily through its fluent API. The library uses sensible defaults; all customization is done programmatically via builder methods.
-
-### Programmatic Configuration
-
-All resize, crop, rotate, pad, and watermark operations are configured via the builder’s methods:
-
-```java
-Scale4j.load(image)
-    .resize(800, 600, ResizeMode.FIT)
-    .quality(ResizeQuality.HIGH)
-    .watermark(TextWatermark.builder()
-        .opacity(0.7f)
-        .build())
-    .build();
-```
-
-### System Properties (Optional)
-
-Scale4j recognizes the following optional system properties:
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `scale4j.cache.enabled` | `true` | Enable in‑memory caching of intermediate image results (experimental). |
-| `scale4j.async.executor` | `virtual` | Executor type for async operations (`virtual`, `fixed`, `cached`). |
-| `scale4j.async.threads` | `Runtime.getRuntime().availableProcessors()` | Number of threads for fixed‑thread‑pool executor. |
-
-### Spring Boot Auto‑Configuration
-
-When using the `scale4j-ext-spring-boot` module, you can customize behavior via Spring Boot’s `application.properties` (or `application.yml`). Supported properties include:
-
-```properties
-# Example Spring Boot configuration
-scale4j.resize.quality=HIGH
-scale4j.watermark.default-opacity=0.7
-scale4j.async.executor=fixed
-scale4j.async.threads=4
-```
-
-### Format Extensions
-
-Support for modern formats like WebP and AVIF is planned for future releases. Currently, Scale4j supports standard JPEG, PNG, GIF, and BMP formats via Java's built‑in ImageIO.
+Scale4j uses a **scratch buffer** technique to reduce GC pressure during chained operations. When multiple intermediate images share the same dimensions, a single `BufferedImage` is reused across the chain -- eliminating unnecessary allocations without any configuration.
 
 ## Contributing
 
-Contributions are welcome. Please follow these steps:
-
-1. **Fork the repository** on GitHub.
-2. **Create a feature branch** (`git checkout -b feature/your-feature`).
-3. **Make your changes**, ensuring code style matches the project’s formatting (run `mvn com.coveo:fmt-maven-plugin:format`).
-4. **Write or update tests** for your changes.
-5. **Run the full test suite** (`mvn clean verify`) to verify no regressions.
-6. **Commit your changes** (`git commit -m 'Add some feature'`).
-7. **Push to the branch** (`git push origin feature/your-feature`).
-8. **Open a Pull Request** with a clear description of the changes.
-
-Please adhere to the [Code of Conduct](CODE_OF_CONDUCT.md) and ensure your contributions are licensed under the Apache License 2.0.
+Contributions are welcome. See [Code of Conduct](CODE_OF_CONDUCT.md) and the [Roadmap](ROADMAP.md).
 
 ## License
 
-Scale4j is licensed under the **Apache License, Version 2.0**.  
-See the [LICENSE](LICENSE) file for the full license text.
-
----
-
-## Acknowledgments
-
-Scale4j is inspired by the [imgscalr](https://github.com/rkalla/imgscalr) library, which provided a solid foundation for image scaling in Java. This project aims to continue its spirit with a modern, maintainable implementation.
+Apache License, Version 2.0. See [LICENSE](LICENSE).

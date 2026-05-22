@@ -30,7 +30,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.scale4j.examples.QuickStart</mainClass>
+                    <mainClass>com.scale4j.examples.ReadmeImageGenerator</mainClass>
                 </configuration>
             </plugin>
         </plugins>
