@@ -1,10 +1,15 @@
 # Scale4j
 
+[![Build](https://github.com/amenski/Scale4j/actions/workflows/build.yml/badge.svg)](https://github.com/amenski/Scale4j/actions/workflows/build.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.amenski/scale4j-core?color=blue)](https://central.sonatype.com/artifact/io.github.amenski/scale4j-core)
 [![Apache License 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-orange?logo=openjdk&logoColor=white)](https://adoptium.net/)
 
 **Scale4j** is a modern image processing library for Java 17+. Resize, crop, rotate, filter, pad, and watermark images with a clean, fluent API.
+
+## Why Scale4j
+
+Java's image tooling hasn't kept up with the language: raw AWT is verbose, and the popular wrappers predate Java 8. Most projects end up hand-rolling the same `Graphics2D` boilerplate — and rediscovering the same traps. Scale4j packs that know-how into a small, dependency-light fluent API for modern Java, with correct-by-default handling of the classics that bite everyone: aspect ratios, EXIF orientation, and quality/speed trade-offs.
 
 | Original | Grayscale | Sepia | Edge Detect | Blur |
 |---|---|---|---|---|
