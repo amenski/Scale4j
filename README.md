@@ -11,6 +11,20 @@
 
 Java's image tooling hasn't kept up with the language: raw AWT is verbose, and the popular wrappers predate Java 8. Most projects end up hand-rolling the same `Graphics2D` boilerplate — and rediscovering the same traps. Scale4j packs that know-how into a small, dependency-light fluent API for modern Java, with correct-by-default handling of the classics that bite everyone: aspect ratios, EXIF orientation, and quality/speed trade-offs.
 
+## How it compares
+
+What Scale4j brings that plain Java 2D and the older wrappers don't:
+
+- **EXIF orientation done right** — `loadWithMetadata().autoRotate()` handles all 8 orientation cases, resets the tag, and keeps the rest of the metadata (camera info, GPS) on save
+- **An explicit quality ladder** — `LOW` → `ULTRA`, with progressive downscaling handled internally so big reductions don't turn to mush
+- **Text and image watermarks, filters, arbitrary-angle rotation, per-side padding** — one fluent chain instead of five utilities
+- **Parallel batch and async APIs** — `Scale4j.batch().parallel(n)`, `Scale4j.async()` with `CompletableFuture`
+- **A Spring Boot starter** — auto-configured `Scale4jTemplate` with `scale4j.*` properties
+
+Honest flip side: Scale4j requires **Java 17+** and brings two dependencies (slf4j-api and TwelveMonkeys ImageIO — the latter is what gives it solid JPEG/CMYK/TIFF handling). If you're on Java 8, use Thumbnailator.
+
+Full feature matrix and benchmarks: [docs/COMPARISON.md](docs/COMPARISON.md)
+
 | Original | Grayscale | Sepia | Edge Detect | Blur |
 |---|---|---|---|---|
 | ![](docs/images/original.jpg) | ![](docs/images/grayscale.jpg) | ![](docs/images/sepia.jpg) | ![](docs/images/edge-detect.jpg) | ![](docs/images/blur.jpg) |
@@ -18,9 +32,15 @@ Java's image tooling hasn't kept up with the language: raw AWT is verbose, and t
 ## Quick Start
 
 ```java
-BufferedImage result = Scale4j.load(image)
+// straight to disk
+Scale4j.load(image)
     .resize(300, 200)
     .toFile(Paths.get("output.jpg"), "jpg");
+
+// or keep working with the result
+BufferedImage result = Scale4j.load(image)
+    .resize(300, 200)
+    .build();
 ```
 
 ## Installation
